@@ -3,6 +3,7 @@ services:
     name: roofroot-backend
     env: node
     plan: free
+    rootDir: roofroot-backend
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
