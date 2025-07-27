@@ -2,6 +2,7 @@ import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import userRoutes from './routes/userRoutes';
 
 dotenv.config();
 
@@ -22,6 +23,9 @@ app.get('/', (req: Request, res: Response) => {
     timestamp: new Date().toISOString()
   });
 });
+
+// API routes
+app.use('/api/users', userRoutes);
 
 // 404 handler
 app.use('*', (req: Request, res: Response) => {
