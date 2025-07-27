@@ -64,15 +64,42 @@ roofroot-backend/
 
 ## 🚀 Deployment
 
-This backend is ready for deployment on:
+### Render Deployment (Recommended)
+
+1. **Push to GitHub:**
+   ```bash
+   git add .
+   git commit -m "Ready for Render deployment"
+   git push origin main
+   ```
+
+2. **Deploy on Render:**
+   - Go to [render.com](https://render.com)
+   - Sign up/Login with GitHub
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+   - Configure:
+     - **Name:** `roofroot-backend`
+     - **Environment:** `Node`
+     - **Build Command:** `npm install && npm run build`
+     - **Start Command:** `npm start`
+     - **Plan:** Free
+
+3. **Environment Variables:**
+   - `MONGO_URI` - Your MongoDB Atlas connection string
+   - `NODE_ENV` - `production`
+   - `PORT` - `10000` (Render will set this automatically)
+
+4. **Deploy!** Render will automatically deploy on every push to main.
+
+### Other Deployment Options
 - **Railway** - Zero-config deployment
-- **Render** - Free tier available
 - **Heroku** - Add buildpack for Node.js
 - **Vercel** - Serverless deployment
 
 ### Environment Variables
 - `MONGO_URI` - MongoDB Atlas connection string
-- `PORT` - Server port (default: 5000)
+- `PORT` - Server port (default: 5000, Render uses 10000)
 - `NODE_ENV` - Environment (development/production)
 
 ## 🔧 Development
