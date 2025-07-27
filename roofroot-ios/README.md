@@ -75,7 +75,7 @@ Create a configuration file for API endpoints:
 ```swift
 // Config.swift
 struct Config {
-    static let apiBaseURL = "http://localhost:5000"
+    static let apiBaseURL = "http://localhost:3001"
     
     struct Endpoints {
         static let health = "\(apiBaseURL)/"
@@ -202,7 +202,7 @@ Consider adding via Swift Package Manager:
 ## 🔗 Backend Integration
 
 The app is configured to connect to:
-- Development: `http://localhost:5000`
+- Development: `http://localhost:3001`
 - Production: Update `Config.swift` with your backend URL
 
 Remember to update the API base URL when deploying to production. 

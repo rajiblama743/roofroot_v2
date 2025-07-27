@@ -99,7 +99,7 @@ roofroot-backend/
 
 ### Environment Variables
 - `MONGO_URI` - MongoDB Atlas connection string
-- `PORT` - Server port (default: 5000, Render uses 10000)
+- `PORT` - Server port (default: 3001, Render uses 10000)
 - `NODE_ENV` - Environment (development/production)
 
 ## 🔧 Development

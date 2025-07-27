@@ -59,7 +59,7 @@ Complete deployment instructions for all RoofRoot platform components.
 2. **Configure Environment Variables:**
    ```bash
    MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/roofroot
-   PORT=5000
+   PORT=3001
    NODE_ENV=production
    ```
 
@@ -232,12 +232,12 @@ Complete deployment instructions for all RoofRoot platform components.
 ```bash
 # Production
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/roofroot
-PORT=5000
+PORT=3001
 NODE_ENV=production
 
 # Development
 MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/roofroot-dev
-PORT=5000
+PORT=3001
 NODE_ENV=development
 ```
 
@@ -248,7 +248,7 @@ NODE_ENV=development
 EXPO_PUBLIC_API_URL=https://your-backend-url.com
 
 # Development
-EXPO_PUBLIC_API_URL=http://localhost:5000
+EXPO_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ### iOS App Configuration
@@ -257,7 +257,7 @@ EXPO_PUBLIC_API_URL=http://localhost:5000
 // Config.swift
 struct Config {
     #if DEBUG
-    static let apiBaseURL = "http://localhost:5000"
+    static let apiBaseURL = "http://localhost:3001"
     #else
     static let apiBaseURL = "https://your-backend-url.com"
     #endif

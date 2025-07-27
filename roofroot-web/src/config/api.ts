@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
 // Get API URL from Expo constants or fallback to localhost
-export const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:5000';
+export const API_BASE_URL = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
   health: `${API_BASE_URL}/`,

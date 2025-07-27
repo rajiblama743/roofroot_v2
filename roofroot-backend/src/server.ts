@@ -2,7 +2,7 @@ import app from './app';
 import connectDB from './config/database';
 
 // Get port from environment variable, with fallbacks
-const port = process.env.PORT || process.env.RENDER_PORT || 5000;
+const port = process.env.PORT || process.env.RENDER_PORT || 3001;
 
 const startServer = async (): Promise<void> => {
   try {

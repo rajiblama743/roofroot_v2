@@ -64,7 +64,7 @@ The API URL is configured in `app.json`:
 ```json
 {
   "extra": {
-    "apiUrl": "http://localhost:5000"
+    "apiUrl": "http://localhost:3001"
   }
 }
 ```
