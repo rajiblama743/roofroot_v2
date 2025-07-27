@@ -1,13 +1,90 @@
 import { Request, Response } from 'express';
-import User, { IUser } from '../models/User';
+import { body, validationResult } from 'express-validator';
+import User, { IUser, UserRole } from '../models/User';
+import { CreateUserRequest, UpdateUserRequest, UserResponse, AuthenticatedRequest } from '../types/user';
 
-// Create a new user
+// Validation rules for creating users (admin only)
+export const validateCreateUser = [
+  body('name')
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Name must be between 2 and 100 characters'),
+  body('email')
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email address'),
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters long'),
+  body('role')
+    .isIn(['admin', 'agency', 'customer'])
+    .withMessage('Role must be admin, agency, or customer'),
+  body('phoneNumber')
+    .optional()
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
+    .withMessage('Please provide a valid phone number'),
+  body('agencyName')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Agency name cannot exceed 200 characters'),
+  body('agencyDescription')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Agency description cannot exceed 1000 characters')
+];
+
+// Validation rules for updating users
+export const validateUpdateUser = [
+  body('name')
+    .optional()
+    .trim()
+    .isLength({ min: 2, max: 100 })
+    .withMessage('Name must be between 2 and 100 characters'),
+  body('email')
+    .optional()
+    .isEmail()
+    .normalizeEmail()
+    .withMessage('Please provide a valid email address'),
+  body('role')
+    .optional()
+    .isIn(['admin', 'agency', 'customer'])
+    .withMessage('Role must be admin, agency, or customer'),
+  body('phoneNumber')
+    .optional()
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
+    .withMessage('Please provide a valid phone number'),
+  body('agencyName')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('Agency name cannot exceed 200 characters'),
+  body('agencyDescription')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('Agency description cannot exceed 1000 characters')
+];
+
+// Create user (admin only)
 export const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userData = req.body;
-    
-    // Check if user with email already exists
-    const existingUser = await User.findOne({ email: userData.email });
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array().map(err => err.msg)
+      });
+      return;
+    }
+
+    const { name, email, password, role, phoneNumber, agencyName, agencyDescription }: CreateUserRequest = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
       res.status(400).json({
         success: false,
@@ -16,60 +93,62 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const user = new User(userData);
-    const savedUser = await user.save();
+    // Create new user
+    const user = new User({
+      name,
+      email,
+      password,
+      role,
+      phoneNumber,
+      agencyName,
+      agencyDescription
+    });
+
+    await user.save();
+
+    // Return user data without password
+    const userResponse = user.toObject();
+    delete (userResponse as any).password;
 
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      data: savedUser
+      user: userResponse
     });
   } catch (error) {
-    console.error('Error creating user:', error);
+    console.error('Create user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error creating user',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Internal server error while creating user'
     });
   }
 };
 
-// Get all users
+// Get all users (admin only)
 export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
   try {
-    const users = await User.find({}).sort({ createdAt: -1 });
+    const users = await User.find({}).select('-password');
     
     res.status(200).json({
       success: true,
       message: 'Users retrieved successfully',
-      count: users.length,
-      data: users
+      users
     });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Get all users error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching users',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Internal server error while retrieving users'
     });
   }
 };
 
 // Get user by ID
-export const getUserById = async (req: Request, res: Response): Promise<void> => {
+export const getUserById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
-    
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        message: 'User ID is required'
-      });
-      return;
-    }
+    const userId = req.params.id;
 
-    const user = await User.findById(id);
-    
+    const user = await User.findById(userId).select('-password');
     if (!user) {
       res.status(404).json({
         success: false,
@@ -81,40 +160,48 @@ export const getUserById = async (req: Request, res: Response): Promise<void> =>
     res.status(200).json({
       success: true,
       message: 'User retrieved successfully',
-      data: user
+      user
     });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error('Get user by ID error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error fetching user',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Internal server error while retrieving user'
     });
   }
 };
 
-// Update user by ID
-export const updateUser = async (req: Request, res: Response): Promise<void> => {
+// Update user
+export const updateUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
-    const updateData = req.body;
-    
-    if (!id) {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
       res.status(400).json({
         success: false,
-        message: 'User ID is required'
+        message: 'Validation failed',
+        errors: errors.array().map(err => err.msg)
+      });
+      return;
+    }
+
+    const userId = req.params.id;
+    const updateData: UpdateUserRequest = req.body;
+
+    // Check if user exists
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
       });
       return;
     }
 
     // If email is being updated, check for uniqueness
-    if (updateData.email) {
-      const existingUser = await User.findOne({ 
-        email: updateData.email, 
-        _id: { $ne: id } 
-      });
-      
-      if (existingUser) {
+    if (updateData.email && updateData.email !== existingUser.email) {
+      const emailExists = await User.findOne({ email: updateData.email });
+      if (emailExists) {
         res.status(400).json({
           success: false,
           message: 'User with this email already exists'
@@ -123,14 +210,12 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
       }
     }
 
+    // Update user
     const updatedUser = await User.findByIdAndUpdate(
-      id,
+      userId,
       updateData,
-      { 
-        new: true, 
-        runValidators: true 
-      }
-    );
+      { new: true, runValidators: true }
+    ).select('-password');
 
     if (!updatedUser) {
       res.status(404).json({
@@ -143,34 +228,25 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
     res.status(200).json({
       success: true,
       message: 'User updated successfully',
-      data: updatedUser
+      user: updatedUser
     });
   } catch (error) {
-    console.error('Error updating user:', error);
+    console.error('Update user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error updating user',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Internal server error while updating user'
     });
   }
 };
 
-// Delete user by ID
+// Delete user (admin only)
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
-    
-    if (!id) {
-      res.status(400).json({
-        success: false,
-        message: 'User ID is required'
-      });
-      return;
-    }
+    const userId = req.params.id;
 
-    const deletedUser = await User.findByIdAndDelete(id);
-
-    if (!deletedUser) {
+    // Check if user exists
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
       res.status(404).json({
         success: false,
         message: 'User not found'
@@ -178,17 +254,18 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
+    // Delete user
+    await User.findByIdAndDelete(userId);
+
     res.status(200).json({
       success: true,
-      message: 'User deleted successfully',
-      data: deletedUser
+      message: 'User deleted successfully'
     });
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error('Delete user error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error deleting user',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      message: 'Internal server error while deleting user'
     });
   }
 }; 

@@ -4,16 +4,29 @@ import {
   getAllUsers,
   getUserById,
   updateUser,
-  deleteUser
+  deleteUser,
+  validateCreateUser,
+  validateUpdateUser
 } from '../controllers/userController';
+import { authenticateToken } from '../middlewares/authMiddleware';
+import {
+  requireAdmin,
+  requireOwnershipOrAdmin,
+  requireOwnershipOrAdminForUpdate
+} from '../middlewares/roleMiddleware';
 
 const router = Router();
 
-// User routes
-router.post('/', createUser);           // Create a new user
-router.get('/', getAllUsers);           // Get all users
-router.get('/:id', getUserById);        // Get user by ID
-router.put('/:id', updateUser);        // Update user by ID
-router.delete('/:id', deleteUser);     // Delete user by ID
+// All user routes require authentication
+router.use(authenticateToken);
+
+// Admin-only routes
+router.post('/', requireAdmin, validateCreateUser, createUser); // Create any user (admin only)
+router.get('/', requireAdmin, getAllUsers); // Get all users (admin only)
+router.delete('/:id', requireAdmin, deleteUser); // Delete user (admin only)
+
+// Routes with ownership checks
+router.get('/:id', requireOwnershipOrAdmin, getUserById); // Get user (own profile or admin)
+router.put('/:id', requireOwnershipOrAdminForUpdate, validateUpdateUser, updateUser); // Update user (own profile or admin)
 
 export default router; 

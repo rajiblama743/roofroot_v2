@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
+import authRoutes from './routes/authRoutes';
 
 dotenv.config();
 
@@ -25,7 +26,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // API routes
-app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes); // Authentication routes (public)
+app.use('/api/users', userRoutes); // User management routes (protected)
 
 // 404 handler
 app.use('*', (req: Request, res: Response) => {

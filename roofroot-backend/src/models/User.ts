@@ -1,4 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
+import bcrypt from 'bcryptjs';
+
+// User role type
+export type UserRole = 'admin' | 'agency' | 'customer';
 
 // Interface for User document
 export interface IUser extends Document {
@@ -8,8 +12,10 @@ export interface IUser extends Document {
   phoneNumber?: string;
   agencyName?: string;
   agencyDescription?: string;
+  role: UserRole;
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 // User schema
@@ -47,6 +53,15 @@ const userSchema = new Schema<IUser>({
     type: String,
     trim: true,
     maxlength: [1000, 'Agency description cannot be more than 1000 characters']
+  },
+  role: {
+    type: String,
+    enum: {
+      values: ['admin', 'agency', 'customer'],
+      message: 'Role must be either admin, agency, or customer'
+    },
+    default: 'customer',
+    required: true
   }
 }, {
   timestamps: true,
@@ -57,6 +72,26 @@ const userSchema = new Schema<IUser>({
     }
   }
 });
+
+// Pre-save middleware to hash password
+userSchema.pre('save', async function(next) {
+  // Only hash the password if it has been modified (or is new)
+  if (!this.isModified('password')) return next();
+
+  try {
+    // Hash password with salt rounds of 12
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
+
+// Method to compare password
+userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 // Create and export the User model
 const User = mongoose.model<IUser>('User', userSchema);
