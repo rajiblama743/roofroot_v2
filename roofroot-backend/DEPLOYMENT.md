@@ -20,11 +20,37 @@ git push origin main
 
 ### 2. Set Up MongoDB Atlas
 
-1. Go to [cloud.mongodb.com](https://cloud.mongodb.com)
-2. Create a new cluster (free tier works)
-3. Create a database user
-4. Get your connection string
-5. Add your IP to the whitelist (or use 0.0.0.0/0 for all IPs)
+1. **Create MongoDB Atlas Account:**
+   - Go to [cloud.mongodb.com](https://cloud.mongodb.com)
+   - Sign up for a free account
+
+2. **Create a Cluster:**
+   - Click "Build a Database"
+   - Choose "FREE" tier (M0)
+   - Select your preferred cloud provider and region
+   - Click "Create"
+
+3. **Set Up Database Access:**
+   - Go to "Database Access" in the left sidebar
+   - Click "Add New Database User"
+   - Choose "Password" authentication
+   - Create a username and password (save these!)
+   - Set privileges to "Read and write to any database"
+   - Click "Add User"
+
+4. **Set Up Network Access:**
+   - Go to "Network Access" in the left sidebar
+   - Click "Add IP Address"
+   - Click "Allow Access from Anywhere" (0.0.0.0/0)
+   - Click "Confirm"
+
+5. **Get Your Connection String:**
+   - Go back to "Database" in the left sidebar
+   - Click "Connect"
+   - Choose "Connect your application"
+   - Copy the connection string
+   - Replace `<password>` with your actual password
+   - Replace `<dbname>` with `roofroot`
 
 ### 3. Deploy on Render
 
@@ -71,6 +97,7 @@ git push origin main
 | `MONGO_URI` | MongoDB Atlas connection string | Yes |
 | `NODE_ENV` | Environment (production) | Yes |
 | `PORT` | Server port (Render sets this) | No |
+| `RENDER_PORT` | Backup port variable | No |
 
 ## Troubleshooting
 
