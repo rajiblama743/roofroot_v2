@@ -43,7 +43,7 @@ git push origin main
    - **Region**: Choose closest to your users
    - **Branch**: `main`
    - **Root Directory**: `roofroot-backend`
-   - **Build Command**: `npm install && npm run build`
+   - **Build Command**: `npm install --include=dev && npm run build`
    - **Start Command**: `npm start`
    - **Plan**: Free
 

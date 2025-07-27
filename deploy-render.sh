@@ -20,7 +20,7 @@ if [ $? -eq 0 ]; then
     echo ""
     echo "2. On Render dashboard:"
     echo "   - Set Root Directory to: roofroot-backend"
-    echo "   - Build Command: npm install && npm run build"
+    echo "   - Build Command: npm install --include=dev && npm run build"
     echo "   - Start Command: npm start"
     echo "   - Add environment variables:"
     echo "     MONGO_URI=your_mongodb_connection_string"
