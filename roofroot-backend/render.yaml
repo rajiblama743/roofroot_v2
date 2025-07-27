@@ -3,7 +3,6 @@ services:
     name: roofroot-backend
     env: node
     plan: free
-    rootDir: roofroot-backend
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     envVars:
@@ -12,4 +11,8 @@ services:
       - key: PORT
         value: 10000
       - key: RENDER_PORT
-        value: 10000 
+        value: 10000
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false 
