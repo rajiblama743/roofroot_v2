@@ -12,7 +12,8 @@ import { authenticateToken } from '../middlewares/authMiddleware';
 import {
   requireAdmin,
   requireOwnershipOrAdmin,
-  requireOwnershipOrAdminForUpdate
+  requireOwnershipOrAdminForUpdate,
+  requireDeleteUserPermissionById
 } from '../middlewares/roleMiddleware';
 
 const router = Router();
@@ -23,7 +24,7 @@ router.use(authenticateToken);
 // Admin-only routes
 router.post('/', requireAdmin, validateCreateUser, createUser); // Create any user (admin only)
 router.get('/', requireAdmin, getAllUsers); // Get all users (admin only)
-router.delete('/:id', requireAdmin, deleteUser); // Delete user (admin only)
+router.delete('/:id', requireDeleteUserPermissionById, deleteUser); // Delete user (admin or own account)
 
 // Routes with ownership checks
 router.get('/:id', requireOwnershipOrAdmin, getUserById); // Get user (own profile or admin)

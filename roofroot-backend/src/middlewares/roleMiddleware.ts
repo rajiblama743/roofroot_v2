@@ -125,3 +125,126 @@ export const requireOwnershipOrAdminForUpdate = (
     message: 'Access denied. You can only modify your own profile'
   });
 }; 
+
+// Middleware to check if user can delete the specified user account
+export const requireDeleteUserPermission = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+    return;
+  }
+
+  const targetUserId = req.params.user_id;
+  const authenticatedUserId = req.user._id.toString();
+
+  // Agency users cannot delete any user account (including their own)
+  if (req.user.role === 'agency') {
+    res.status(403).json({
+      success: false,
+      message: 'Agency users cannot delete user accounts'
+    });
+    return;
+  }
+
+  // Admin users can delete customer and agency users, but not themselves or other admins
+  if (req.user.role === 'admin') {
+    // Admin cannot delete themselves
+    if (authenticatedUserId === targetUserId) {
+      res.status(403).json({
+        success: false,
+        message: 'Admins cannot delete their own account via this API'
+      });
+      return;
+    }
+    next();
+    return;
+  }
+
+  // Customer users can only delete their own account
+  if (req.user.role === 'customer') {
+    if (authenticatedUserId === targetUserId) {
+      next();
+      return;
+    } else {
+      res.status(403).json({
+        success: false,
+        message: 'You can only delete your own account'
+      });
+      return;
+    }
+  }
+
+  // Default case - should not reach here
+  res.status(403).json({
+    success: false,
+    message: 'Access denied'
+  });
+}; 
+
+// Middleware to check if user can delete the specified user account (using :id parameter)
+export const requireDeleteUserPermissionById = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): void => {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: 'Authentication required'
+    });
+    return;
+  }
+
+  const targetUserId = req.params.id;
+  const authenticatedUserId = req.user._id.toString();
+
+  // Prevent admin and agency users from deleting their own accounts
+  if ((req.user.role === 'admin' || req.user.role === 'agency') && authenticatedUserId === targetUserId) {
+    res.status(403).json({
+      success: false,
+      message: 'Admin and agency users cannot delete their own accounts'
+    });
+    return;
+  }
+
+  // Agency users cannot delete any user account
+  if (req.user.role === 'agency') {
+    res.status(403).json({
+      success: false,
+      message: 'Agency users cannot delete user accounts'
+    });
+    return;
+  }
+
+  // Admin users can delete other user accounts (but not their own)
+  if (req.user.role === 'admin') {
+    next();
+    return;
+  }
+
+  // Customer users can only delete their own account
+  if (req.user.role === 'customer') {
+    if (authenticatedUserId === targetUserId) {
+      next();
+      return;
+    } else {
+      res.status(403).json({
+        success: false,
+        message: 'You can only delete your own account'
+      });
+      return;
+    }
+  }
+
+  // Default case - should not reach here
+  res.status(403).json({
+    success: false,
+    message: 'Access denied'
+  });
+}; 

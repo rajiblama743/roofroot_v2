@@ -234,6 +234,63 @@ Deletes a specific user (admin only).
 }
 ```
 
+### 8. Delete User Account (Role-Based Access)
+**DELETE** `/api/auth/delete/:user_id`
+
+Deletes a user account with role-based access control.
+
+**Authentication Required:** Yes (JWT token required)
+
+**Access Rules:**
+- **Customer users**: Can only delete their own account
+- **Agency users**: Cannot delete any user account (including their own)
+- **Admin users**: Can delete customer and agency users, but not themselves or other admins
+
+**Request Headers:**
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+**Response (Success):**
+```json
+{
+  "success": true,
+  "message": "User account deleted successfully"
+}
+```
+
+**Response (Access Denied - Agency User):**
+```json
+{
+  "success": false,
+  "message": "Agency users cannot delete user accounts"
+}
+```
+
+**Response (Access Denied - Customer trying to delete another user):**
+```json
+{
+  "success": false,
+  "message": "You can only delete your own account"
+}
+```
+
+**Response (Access Denied - Admin trying to delete themselves):**
+```json
+{
+  "success": false,
+  "message": "Admins cannot delete their own account via this API"
+}
+```
+
+**Response (Access Denied - Admin trying to delete another admin):**
+```json
+{
+  "success": false,
+  "message": "Admins cannot delete other admin accounts"
+}
+```
+
 ## User Roles
 
 The system supports three user roles:
@@ -260,6 +317,10 @@ The system supports three user roles:
   - Users can access/modify their own profile
   - Admins can access/modify any user's profile
   - Customers cannot change their role
+- **Role-based delete endpoint**: DELETE `/api/auth/delete/:user_id`
+  - Customer users: Can only delete their own account
+  - Agency users: Cannot delete any user account
+  - Admin users: Can delete customer and agency users, but not themselves or other admins
 
 ## Error Responses
 
@@ -277,6 +338,15 @@ All endpoints return error responses in the following format:
 - **400**: Validation error or bad request
 - **401**: Authentication required or invalid token
 - **403**: Access denied (insufficient permissions)
+- **404**: User not found
+- **500**: Internal server error
+
+### Delete User Endpoint Error Codes
+- **401**: Authentication required or invalid token
+- **403**: Access denied (role-based restrictions)
+  - Agency users cannot delete any user account
+  - Customer users can only delete their own account
+  - Admin users cannot delete themselves or other admins
 - **404**: User not found
 - **500**: Internal server error
 

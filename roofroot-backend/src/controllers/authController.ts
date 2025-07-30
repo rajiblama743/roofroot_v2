@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import User, { IUser } from '../models/User';
-import { RegisterRequest, LoginRequest, AuthResponse, JWTPayload } from '../types/user';
+import { RegisterRequest, LoginRequest, AuthResponse, JWTPayload, AuthenticatedRequest } from '../types/user';
 import { generateToken } from '../middlewares/authMiddleware';
 
 // Validation rules for registration
@@ -175,6 +175,50 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       message: 'Internal server error during login'
+    });
+  }
+};
+
+// Delete user endpoint
+export const deleteUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const targetUserId = req.params.user_id;
+    const authenticatedUser = req.user!;
+
+    // Find the target user
+    const targetUser = await User.findById(targetUserId);
+    if (!targetUser) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    // Additional validation for admin users
+    if (authenticatedUser.role === 'admin') {
+      // Admin cannot delete other admins
+      if (targetUser.role === 'admin') {
+        res.status(403).json({
+          success: false,
+          message: 'Admins cannot delete other admin accounts'
+        });
+        return;
+      }
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(targetUserId);
+
+    res.status(200).json({
+      success: true,
+      message: 'User account deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete user error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while deleting user'
     });
   }
 }; 
