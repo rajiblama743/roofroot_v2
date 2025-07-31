@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import dotenv from 'dotenv';
 import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
+import listingRoutes from './routes/listingRoutes';
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get('/', (req: Request, res: Response) => {
 // API routes
 app.use('/api/auth', authRoutes); // Authentication routes (public)
 app.use('/api/users', userRoutes); // User management routes (protected)
+app.use('/api/listings', listingRoutes); // Listing routes (mixed public/protected)
 
 // 404 handler
 app.use('*', (req: Request, res: Response) => {

@@ -1,121 +1,83 @@
-# RoofRoot Backend API
+# RoofRoot Backend
 
-A clean, production-ready Node.js + Express.js + TypeScript backend for the RoofRoot real estate platform.
+This is the backend service for the RoofRoot real estate platform, built with Node.js, Express, TypeScript, and MongoDB.
 
-## 🚀 Quick Start
+---
 
-### Prerequisites
-- Node.js 18+ 
-- MongoDB Atlas account
+## User Authentication
 
-### Installation
+- JWT-based authentication for secure API access.
+- Endpoints:
+  - `POST /api/auth/register` — Register a new user (customer)
+  - `POST /api/auth/login` — Login and receive JWT token
+- Use the `Authorization: Bearer <token>` header for protected routes.
 
-1. **Clone and install dependencies:**
-```bash
-cd roofroot-backend
-npm install
+**Example:**
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "yourpassword"
+}
 ```
 
-2. **Environment Setup:**
-```bash
-cp env.example .env
+---
+
+## Property Model
+
+Defines the schema for real estate properties in MongoDB.
+
+**Example (Mongoose Schema):**
+```ts
+const propertySchema = new Schema({
+  title: { type: String, required: true },
+  description: String,
+  price: { type: Number, required: true },
+  address: String,
+  images: [String],
+  owner: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
 ```
 
-3. **Configure MongoDB Atlas:**
-   - Create a MongoDB Atlas account at [cloud.mongodb.com](https://cloud.mongodb.com)
-   - Create a new cluster
-   - Get your connection string
-   - Update `.env` with your `MONGO_URI`
+---
 
-4. **Run the server:**
-```bash
-# Development
-npm run dev
+## API Routes
 
-# Production
-npm run build
-npm start
+- **Auth Routes:**
+  - `POST /api/auth/register` — Register user
+  - `POST /api/auth/login` — Login
+- **User Routes:**
+  - `GET /api/users/:id` — Get user profile (protected)
+  - `PUT /api/users/:id` — Update user profile (protected)
+- **Property Routes:**
+  - `POST /api/properties` — Create property (protected)
+  - `GET /api/properties` — List all properties
+  - `GET /api/properties/:id` — Get property by ID
+  - `PUT /api/properties/:id` — Update property (owner only)
+  - `DELETE /api/properties/:id` — Delete property (owner only)
+
+---
+
+## Validation Middleware
+
+- Uses `express-validator` for request validation.
+- Ensures required fields and correct formats for all endpoints.
+
+**Example:**
+```ts
+import { body } from 'express-validator';
+
+export const validateProperty = [
+  body('title').notEmpty().withMessage('Title is required'),
+  body('price').isNumeric().withMessage('Price must be a number'),
+  // ...other validations
+];
 ```
 
-## 📁 Project Structure
+---
 
-```
-roofroot-backend/
-├── src/
-│   ├── config/
-│   │   └── database.ts    # MongoDB connection
-│   ├── app.ts             # Express app setup
-│   └── server.ts          # Server entry point
-├── package.json
-├── tsconfig.json
-└── env.example
-```
-
-## 🛠️ Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Compile TypeScript to JavaScript
-- `npm start` - Run compiled server
-- `npm run clean` - Remove dist folder
-
-## 🌐 API Endpoints
-
-- `GET /` - Health check endpoint
-
-## 🚀 Deployment
-
-### Render Deployment (Recommended)
-
-1. **Push to GitHub:**
-   ```bash
-   git add .
-   git commit -m "Ready for Render deployment"
-   git push origin main
-   ```
-
-2. **Deploy on Render:**
-   - Go to [render.com](https://render.com)
-   - Sign up/Login with GitHub
-   - Click "New +" → "Web Service"
-   - Connect your GitHub repository
-   - Configure:
-     - **Name:** `roofroot-backend`
-     - **Environment:** `Node`
-     - **Build Command:** `npm install && npm run build`
-     - **Start Command:** `npm start`
-     - **Plan:** Free
-
-3. **Environment Variables:**
-   - `MONGO_URI` - Your MongoDB Atlas connection string
-   - `NODE_ENV` - `production`
-   - `PORT` - `10000` (Render will set this automatically)
-
-4. **Deploy!** Render will automatically deploy on every push to main.
-
-### Other Deployment Options
-- **Railway** - Zero-config deployment
-- **Heroku** - Add buildpack for Node.js
-- **Vercel** - Serverless deployment
-
-### Environment Variables
-- `MONGO_URI` - MongoDB Atlas connection string
-- `PORT` - Server port (default: 3001, Render uses 10000)
-- `NODE_ENV` - Environment (development/production)
-
-## 🔧 Development
-
-The project uses:
-- **Express.js** - Web framework
-- **TypeScript** - Type safety
-- **Mongoose** - MongoDB ODM
-- **CORS** - Cross-origin requests
-- **Helmet** - Security headers
-
-## 📝 Next Steps
-
-Ready for adding:
-- User authentication
-- Property models
-- API routes
-- Validation middleware
-- Testing setup 
+For more details, see the full API documentation in `USER_API.md`. 
