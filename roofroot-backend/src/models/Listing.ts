@@ -11,6 +11,10 @@ export interface IListing extends Document {
   location: string;
   type: ListingType;
   images: string[];
+  bedrooms?: number;
+  bathrooms?: number;
+  carBay?: number;
+  area?: number;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -58,6 +62,22 @@ const listingSchema = new Schema<IListing>({
       },
       message: 'Cannot have more than 10 images'
     }
+  },
+  bedrooms: {
+    type: Number,
+    min: [0, 'Bedrooms cannot be negative']
+  },
+  bathrooms: {
+    type: Number,
+    min: [0, 'Bathrooms cannot be negative']
+  },
+  carBay: {
+    type: Number,
+    min: [0, 'CarBay cannot be negative']
+  },
+  area: {
+    type: Number,
+    min: [0, 'Area cannot be negative']
   },
   createdBy: {
     type: Schema.Types.ObjectId,
