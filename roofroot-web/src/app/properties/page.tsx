@@ -1,32 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   Search, 
   Filter, 
-  MapPin, 
-  DollarSign, 
-  Building2, 
-  Calendar,
-  ChevronLeft,
+  Grid3X3, 
+  ChevronLeft, 
   ChevronRight,
   Grid,
   List
 } from 'lucide-react';
-import { apiClient, Listing, ListingParams } from '@/lib/api';
+import { apiClient, Listing, ListingFilters } from '@/lib/api';
 import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils } from '@/lib/utils';
 import PropertyCard from '@/components/PropertyCard';
 import SearchBar from '@/components/SearchBar';
 
-export default function PropertiesPage() {
+function PropertiesPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filters, setFilters] = useState<ListingParams>({
+  const [filters, setFilters] = useState<ListingFilters>({
     page: 1,
     limit: 12,
     search: searchParams.get('search') || '',
@@ -69,7 +66,7 @@ export default function PropertiesPage() {
     }
   };
 
-  const handleFilterChange = (newFilters: Partial<ListingParams>) => {
+  const handleFilterChange = (newFilters: Partial<ListingFilters>) => {
     const updatedFilters = { ...filters, ...newFilters, page: 1 };
     setFilters(updatedFilters);
     
@@ -253,7 +250,7 @@ export default function PropertiesPage() {
             }`}>
               {listings.map((listing) => (
                 <PropertyCard 
-                  key={listing._id} 
+                  key={listing.id} 
                   listing={listing} 
                   viewMode={viewMode}
                 />
@@ -278,7 +275,7 @@ export default function PropertiesPage() {
                   ).map((pageNum) => (
                     <button
                       key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
+                      onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
                       className={`px-3 py-2 rounded-md text-sm font-medium ${
                         pageNum === pagination.page
                           ? 'bg-blue-600 text-white'
@@ -303,5 +300,13 @@ export default function PropertiesPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PropertiesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PropertiesPageContent />
+    </Suspense>
   );
 } 

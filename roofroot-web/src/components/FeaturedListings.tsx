@@ -73,8 +73,8 @@ const FeaturedListings = () => {
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {listings.map((listing) => (
         <Link
-          key={listing._id}
-          href={`/properties/${listing._id}`}
+          key={listing.id}
+          href={`/properties/${listing.id}`}
           className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
         >
           {/* Property Image */}
