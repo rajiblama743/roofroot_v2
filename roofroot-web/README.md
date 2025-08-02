@@ -1,112 +1,36 @@
-# RoofRoot Web Frontend
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-A modern React Native Web application for the RoofRoot real estate platform, built with Expo and TypeScript.
+## Getting Started
 
-## 🚀 Quick Start
-
-### Prerequisites
-- Node.js 18+
-- Expo CLI (optional but recommended)
-
-### Installation
-
-1. **Install dependencies:**
-```bash
-cd roofroot-web
-npm install
-```
-
-2. **Start the development server:**
-```bash
-npm start
-```
-
-3. **Open in browser:**
-- Press `w` to open in web browser
-- Or visit `http://localhost:19006`
-
-## 📁 Project Structure
-
-```
-roofroot-web/
-├── src/
-│   ├── components/
-│   │   └── Header.tsx        # Reusable header component
-│   ├── screens/
-│   │   └── HomeScreen.tsx    # Main home screen
-│   └── config/
-│       └── api.ts           # API configuration
-├── App.tsx                   # Main app component
-├── app.json                  # Expo configuration
-├── package.json
-└── tsconfig.json
-```
-
-## 🛠️ Available Scripts
-
-- `npm start` - Start Expo development server
-- `npm run web` - Start web-only development server
-- `npm run android` - Start Android emulator
-- `npm run ios` - Start iOS simulator
-- `npm run build` - Build for production web
-
-## 🌐 Web Deployment
-
-This app is ready for deployment on:
-- **Vercel** - Zero-config deployment
-- **Netlify** - Static site hosting
-- **Expo** - Built-in hosting
-- **Firebase Hosting** - Google's hosting platform
-
-### Environment Configuration
-
-The API URL is configured in `app.json`:
-```json
-{
-  "extra": {
-    "apiUrl": "http://localhost:3001"
-  }
-}
-```
-
-For production, update this to your backend URL.
-
-## 🔧 Development
-
-The project uses:
-- **React Native Web** - Cross-platform development
-- **Expo** - Development platform
-- **TypeScript** - Type safety
-- **Expo Constants** - Environment configuration
-
-## 📱 Platform Support
-
-- ✅ **Web** - Primary target
-- ✅ **iOS** - Via Expo
-- ✅ **Android** - Via Expo
-
-## 🎨 UI Components
-
-- Clean, minimal design
-- Responsive layout
-- Cross-platform compatible
-- Ready for custom styling
-
-## 📝 Next Steps
-
-Ready for adding:
-- Navigation (React Navigation)
-- State management (Redux/Context)
-- API integration
-- Authentication
-- Property listings
-- User profiles
-- Search functionality
-
-## 🚀 Production Build
+First, run the development server:
 
 ```bash
-npm run build
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-This creates a production-ready web build in the `web-build` directory. 
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
