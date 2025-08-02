@@ -231,7 +231,10 @@ export default function ApplyAgencyPage() {
                     autoComplete="tel"
                     {...register('phoneNumber', {
                       required: 'Phone number is required',
-                      validate: (value) => validationUtils.isValidPhone(value) || 'Please enter a valid phone number',
+                      validate: (value) => {
+                        if (!value) return 'Phone number is required';
+                        return validationUtils.isValidPhone(value) || 'Please enter a valid phone number';
+                      },
                     })}
                     className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                       errors.phoneNumber ? 'border-red-300' : 'border-gray-300'

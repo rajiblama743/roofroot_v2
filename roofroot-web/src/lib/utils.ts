@@ -99,7 +99,8 @@ export const validationUtils = {
     return password.length >= 6;
   },
 
-  isValidPhone: (phone: string): boolean => {
+  isValidPhone: (phone: string | undefined): boolean => {
+    if (!phone) return false;
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   },
