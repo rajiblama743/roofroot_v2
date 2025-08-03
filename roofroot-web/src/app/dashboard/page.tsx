@@ -91,13 +91,13 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-white rounded-lg shadow-md p-6">
+                <div key={i} className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
                   <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
                   <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -111,20 +111,20 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Agency Dashboard</h1>
-              <p className="text-gray-600">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Agency Dashboard</h1>
+              <p className="text-sm sm:text-base text-gray-600">
                 Manage your property listings and track your performance
               </p>
             </div>
             <button
               onClick={() => router.push('/dashboard/add-property')}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center"
+              className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add Property
@@ -133,70 +133,70 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
-              <Building2 className="w-8 h-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Listings</p>
-                <p className="text-2xl font-bold text-gray-900">{listings.length}</p>
+              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Total Listings</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{listings.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
-              <DollarSign className="w-8 h-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">For Sale</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">For Sale</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {listings.filter(l => l.type === 'sale').length}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
-              <Calendar className="w-8 h-8 text-purple-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">For Lease</p>
-                <p className="text-2xl font-bold text-gray-900">
+              <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">For Lease</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">
                   {listings.filter(l => l.type === 'lease').length}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-6">
+          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             <div className="flex items-center">
-              <Building2 className="w-8 h-8 text-orange-600" />
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Listings</p>
-                <p className="text-2xl font-bold text-gray-900">{listings.length}</p>
+              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600" />
+              <div className="ml-3 sm:ml-4">
+                <p className="text-xs sm:text-sm font-medium text-gray-600">Active Listings</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{listings.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <input
                 type="text"
                 placeholder="Search your listings..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as 'all' | 'sale' | 'lease')}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             >
               <option value="all">All Types</option>
               <option value="sale">For Sale</option>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
               placeholder="Min Price"
               value={minPrice}
               onChange={(e) => setMinPrice(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
             
             <input
@@ -216,12 +216,12 @@ export default function DashboardPage() {
               placeholder="Max Price"
               value={maxPrice}
               onChange={(e) => setMaxPrice(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+              className="px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
             />
           </div>
           
           {/* View Mode Toggle */}
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <p className="text-sm text-gray-600">
               {filteredListings.length} listing{filteredListings.length !== 1 ? 's' : ''} found
             </p>
@@ -234,7 +234,7 @@ export default function DashboardPage() {
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                <Grid3X3 className="w-5 h-5" />
+                <Grid3X3 className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
@@ -244,7 +244,7 @@ export default function DashboardPage() {
                     : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                <List className="w-5 h-5" />
+                <List className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
           </div>
@@ -252,7 +252,7 @@ export default function DashboardPage() {
 
         {/* Listings */}
         {error ? (
-          <div className="text-center py-12">
+          <div className="text-center py-8 sm:py-12">
             <p className="text-gray-500">{error}</p>
             <button
               onClick={fetchListings}
@@ -262,12 +262,12 @@ export default function DashboardPage() {
             </button>
           </div>
         ) : filteredListings.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <div className="text-center py-8 sm:py-12">
+            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               {listings.length === 0 ? 'No listings yet' : 'No listings match your search'}
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className="text-sm sm:text-base text-gray-500 mb-6">
               {listings.length === 0 
                 ? 'Start by adding your first property listing.'
                 : 'Try adjusting your search or filter criteria.'
@@ -276,23 +276,23 @@ export default function DashboardPage() {
             {listings.length === 0 && (
               <button
                 onClick={() => router.push('/dashboard/add-property')}
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
               >
                 Add Your First Property
               </button>
             )}
           </div>
         ) : (
-          <div className={`grid gap-6 ${
+          <div className={`grid gap-4 sm:gap-6 ${
             viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+              ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
               : 'grid-cols-1'
           }`}>
             {filteredListings.map((listing) => (
               <Link key={listing.id} href={`/dashboard/listings/${listing.id}`} className="block">
                 <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
                   {/* Property Image */}
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-40 sm:h-48 overflow-hidden">
                     <img
                       src={listing.images && listing.images.length > 0 
                         ? listing.images[0] 
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                       alt={listing.title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute top-4 left-4">
+                    <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
                         listing.type === 'sale' 
                           ? 'bg-green-100 text-green-800' 
@@ -313,8 +313,8 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Property Details */}
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+                  <div className="p-4 sm:p-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
                       {listing.title}
                     </h3>
                     
@@ -323,18 +323,18 @@ export default function DashboardPage() {
                     </p>
 
                     <div className="flex items-center text-gray-500 text-sm mb-3">
-                      <MapPin className="w-4 h-4 mr-1" />
+                      <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
                       <span className="line-clamp-1">{listing.location}</span>
                     </div>
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center text-green-600 font-semibold">
-                        <DollarSign className="w-4 h-4 mr-1" />
-                        <span>{formatPrice(listing.price)}</span>
+                        <DollarSign className="w-4 h-4 mr-1 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">{formatPrice(listing.price)}</span>
                       </div>
                       
                       <div className="flex items-center text-gray-500 text-xs">
-                        <Calendar className="w-3 h-3 mr-1" />
+                        <Calendar className="w-3 h-3 mr-1 flex-shrink-0" />
                         <span>{formatDate(listing.createdAt)}</span>
                       </div>
                     </div>

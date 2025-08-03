@@ -139,22 +139,22 @@ export default function DashboardListingDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Back Button */}
-        <div className="mb-6">
+        <div className="mb-4 sm:mb-6">
           <Link
             href="/dashboard"
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
           >
-            <ArrowLeft className="w-5 h-5 mr-2" />
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
             Back to Dashboard
           </Link>
         </div>
 
         {/* Property Images */}
-        <div className="mb-8">
-          <div className="relative h-96 rounded-lg overflow-hidden">
+        <div className="mb-6 sm:mb-8">
+          <div className="relative h-64 sm:h-80 lg:h-96 rounded-lg overflow-hidden">
             <img
               src={listing.images && listing.images.length > 0 
                 ? listing.images[selectedImageIndex] 
@@ -163,8 +163,8 @@ export default function DashboardListingDetailPage() {
               alt={listing.title}
               className="w-full h-full object-cover"
             />
-            <div className="absolute top-4 left-4">
-              <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+            <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+              <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${
                 listing.type === 'sale' 
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-blue-100 text-blue-800'
@@ -176,12 +176,12 @@ export default function DashboardListingDetailPage() {
           
           {/* Image Gallery Thumbnails */}
           {listing.images && listing.images.length > 1 && (
-            <div className="mt-4 flex space-x-2 overflow-x-auto">
+            <div className="mt-4 flex space-x-2 overflow-x-auto pb-2">
               {listing.images.map((image: string, index: number) => (
                 <button
                   key={index}
                   onClick={() => setSelectedImageIndex(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  className={`flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 transition-all ${
                     selectedImageIndex === index 
                       ? 'border-blue-500 ring-2 ring-blue-200' 
                       : 'border-gray-200 hover:border-gray-300'
@@ -199,26 +199,26 @@ export default function DashboardListingDetailPage() {
         </div>
 
         {/* Property Details */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-              <div className="flex justify-between items-start mb-4">
-                <h1 className="text-3xl font-bold text-gray-900">{listing.title}</h1>
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{listing.title}</h1>
                 
                 {/* Edit/Delete buttons for owners */}
                 {isOwner && (
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => router.push(`/dashboard/edit-property/${listing.id}`)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors flex items-center"
+                      className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors flex items-center justify-center"
                     >
                       <Edit className="w-4 h-4 mr-1" />
                       Edit
                     </button>
                     <button
                       onClick={() => setShowDeleteModal(true)}
-                      className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors flex items-center"
+                      className="w-full sm:w-auto bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700 transition-colors flex items-center justify-center"
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
                       Delete
@@ -228,57 +228,57 @@ export default function DashboardListingDetailPage() {
               </div>
               
               <div className="flex items-center text-gray-600 mb-4">
-                <MapPin className="w-5 h-5 mr-2 text-gray-500" />
-                <span className="text-lg font-medium">{listing.location}</span>
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-gray-500 flex-shrink-0" />
+                <span className="text-base sm:text-lg font-medium">{listing.location}</span>
               </div>
 
-              <div className="flex items-center text-green-600 font-bold text-2xl mb-6">
-                <DollarSign className="w-6 h-6 mr-2" />
+              <div className="flex items-center text-green-600 font-bold text-xl sm:text-2xl mb-6">
+                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 mr-2 flex-shrink-0" />
                 <span>{formatPrice(listing.price)}</span>
               </div>
 
-              <div className="prose prose-lg max-w-none">
+              <div className="prose prose-sm sm:prose-lg max-w-none">
                 <p className="text-gray-700 leading-relaxed">{listing.description}</p>
               </div>
             </div>
 
             {/* Property Features */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">Property Features</h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4 sm:mb-6">Property Features</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {/* Bedrooms */}
                 <div className="flex items-center">
-                  <Bed className="w-5 h-5 text-blue-600 mr-2" />
+                  <Bed className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-gray-600">Bedrooms</p>
-                    <p className="text-gray-700 font-medium">{listing.bedrooms || '-'}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Bedrooms</p>
+                    <p className="text-sm sm:text-base text-gray-700 font-medium">{listing.bedrooms || '-'}</p>
                   </div>
                 </div>
                 
                 {/* Bathrooms */}
                 <div className="flex items-center">
-                  <Bath className="w-5 h-5 text-green-600 mr-2" />
+                  <Bath className="w-5 h-5 text-green-600 mr-2 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-gray-600">Bathrooms</p>
-                    <p className="text-gray-700 font-medium">{listing.bathrooms || '-'}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Bathrooms</p>
+                    <p className="text-sm sm:text-base text-gray-700 font-medium">{listing.bathrooms || '-'}</p>
                   </div>
                 </div>
                 
                 {/* Car Bay */}
                 <div className="flex items-center">
-                  <Building2 className="w-5 h-5 text-purple-600 mr-2" />
+                  <Building2 className="w-5 h-5 text-purple-600 mr-2 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-gray-600">Car Bay</p>
-                    <p className="text-gray-700 font-medium">{listing.carBay || '-'}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Car Bay</p>
+                    <p className="text-sm sm:text-base text-gray-700 font-medium">{listing.carBay || '-'}</p>
                   </div>
                 </div>
                 
                 {/* Size */}
                 <div className="flex items-center">
-                  <Square className="w-5 h-5 text-orange-600 mr-2" />
+                  <Square className="w-5 h-5 text-orange-600 mr-2 flex-shrink-0" />
                   <div>
-                    <p className="text-sm text-gray-600">Size</p>
-                    <p className="text-gray-700 font-medium">{listing.area ? `${listing.area} sq ft` : '-'}</p>
+                    <p className="text-xs sm:text-sm text-gray-600">Size</p>
+                    <p className="text-sm sm:text-base text-gray-700 font-medium">{listing.area ? `${listing.area} sq ft` : '-'}</p>
                   </div>
                 </div>
               </div>
@@ -287,47 +287,47 @@ export default function DashboardListingDetailPage() {
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Property Information</h3>
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 lg:sticky lg:top-24">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Property Information</h3>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Type</span>
-                  <span className="font-medium">{listing.type === 'sale' ? 'For Sale' : 'For Lease'}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Type</span>
+                  <span className="text-sm sm:text-base font-medium">{listing.type === 'sale' ? 'For Sale' : 'For Lease'}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Price</span>
-                  <span className="font-medium text-green-600">{formatPrice(listing.price)}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Price</span>
+                  <span className="text-sm sm:text-base font-medium text-green-600">{formatPrice(listing.price)}</span>
                 </div>
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Listed</span>
-                  <span className="font-medium">{formatDate(listing.createdAt)}</span>
+                  <span className="text-xs sm:text-sm text-gray-600">Listed</span>
+                  <span className="text-sm sm:text-base font-medium">{formatDate(listing.createdAt)}</span>
                 </div>
               </div>
 
               {/* Location with improved styling */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
                 <div className="flex items-start">
                   <MapPin className="w-4 h-4 text-gray-500 mt-0.5 mr-2 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-900 mb-1">Location</p>
-                    <p className="text-sm text-gray-600 leading-relaxed">{listing.location}</p>
+                    <p className="text-xs sm:text-sm font-medium text-gray-900 mb-1">Location</p>
+                    <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{listing.location}</p>
                   </div>
                 </div>
               </div>
 
               {/* Agency Information */}
               {listing.createdBy && (
-                <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-900 mb-3">Listed by</h4>
+                <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
+                  <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-3">Listed by</h4>
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-white" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                      <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-semibold text-gray-900">
+                      <p className="text-xs sm:text-sm font-semibold text-gray-900">
                         {listing.createdBy.agencyName || listing.createdBy.name}
                       </p>
                       <p className="text-xs text-gray-500">Verified Agency</p>
@@ -342,8 +342,8 @@ export default function DashboardListingDetailPage() {
 
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-4">
             <div className="flex items-center mb-4">
               <div className="flex-shrink-0">
                 <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -359,18 +359,18 @@ export default function DashboardListingDetailPage() {
               </p>
             </div>
             
-            <div className="flex justify-end space-x-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDeleteListing}
                 disabled={deleting}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center"
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 flex items-center justify-center"
               >
                 {deleting ? (
                   <>
