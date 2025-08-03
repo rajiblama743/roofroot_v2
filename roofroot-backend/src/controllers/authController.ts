@@ -136,7 +136,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!user) {
       res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Email not found. Please check your email address or register a new account.'
       });
       return;
     }
@@ -146,7 +146,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!isPasswordValid) {
       res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: 'Incorrect password. Please check your password and try again.'
       });
       return;
     }
