@@ -10,6 +10,7 @@ export interface ApiError {
     };
   };
   message?: string;
+  stack?: string;
 }
 
 export interface ErrorHandlerOptions {

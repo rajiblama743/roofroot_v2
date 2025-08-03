@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 
 async function hashPassword() {
   // Change this to your desired admin password
-  const password = 'Bumble_Beet@123'; // Replace with your password
+  const password = 'Light_cad#123'; // Replace with your password
   
   try {
     const saltRounds = 12;
