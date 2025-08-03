@@ -120,29 +120,29 @@ export default function AgencyListingsPage() {
   const displayName = agencyInfo?.agencyName || agencyInfo?.name || agencyName;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center mb-4">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex items-center mb-3 sm:mb-4">
             <Link
               href="/properties"
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mr-4"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mr-3 sm:mr-4 text-sm sm:text-base"
             >
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               Back to Properties
             </Link>
           </div>
           
-          <div className="flex items-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-4">
-              <Building2 className="w-6 h-6 text-white" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+              <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 leading-tight">
                 Listings by {displayName}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
                 {pagination.total} verified properties from this agency
               </p>
             </div>
@@ -150,13 +150,13 @@ export default function AgencyListingsPage() {
         </div>
 
         {/* View Mode Toggle */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-6 sm:mb-8">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
               <span className="text-sm font-medium text-gray-700">View:</span>
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-md transition-colors ${
+                className={`p-1.5 sm:p-2 rounded-md transition-colors ${
                   viewMode === 'grid'
                     ? 'bg-blue-100 text-blue-600'
                     : 'text-gray-400 hover:text-gray-600'
@@ -168,7 +168,7 @@ export default function AgencyListingsPage() {
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-colors ${
+                className={`p-1.5 sm:p-2 rounded-md transition-colors ${
                   viewMode === 'list'
                     ? 'bg-blue-100 text-blue-600'
                     : 'text-gray-400 hover:text-gray-600'
@@ -184,15 +184,15 @@ export default function AgencyListingsPage() {
 
         {/* Results */}
         {listings.length === 0 ? (
-          <div className="text-center py-12">
-            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Listings Found</h2>
-            <p className="text-gray-500 mb-6">
+          <div className="text-center py-8 sm:py-12">
+            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Listings Found</h2>
+            <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">
               This agency doesn't have any active listings at the moment.
             </p>
             <Link
               href="/properties"
-              className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
             >
               Browse All Properties
             </Link>
@@ -200,9 +200,9 @@ export default function AgencyListingsPage() {
         ) : (
           <>
             {/* Properties Grid/List */}
-            <div className={`grid gap-6 ${
+            <div className={`grid gap-4 sm:gap-6 ${
               viewMode === 'grid' 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
                 : 'grid-cols-1'
             }`}>
               {listings.map((listing) => (
@@ -216,12 +216,12 @@ export default function AgencyListingsPage() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="mt-12 flex items-center justify-center">
-                <nav className="flex items-center space-x-2">
+              <div className="mt-8 sm:mt-12 flex items-center justify-center">
+                <nav className="flex items-center space-x-1 sm:space-x-2">
                   <button
                     onClick={() => handlePageChange(pagination.page - 1)}
                     disabled={pagination.page <= 1}
-                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 sm:p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -235,7 +235,7 @@ export default function AgencyListingsPage() {
                     <button
                       key={pageNum}
                       onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
-                      className={`px-3 py-2 rounded-md text-sm font-medium ${
+                      className={`px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium ${
                         pageNum === pagination.page
                           ? 'bg-blue-600 text-white'
                           : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -248,7 +248,7 @@ export default function AgencyListingsPage() {
                   <button
                     onClick={() => handlePageChange(pagination.page + 1)}
                     disabled={pagination.page >= pagination.totalPages}
-                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-1.5 sm:p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

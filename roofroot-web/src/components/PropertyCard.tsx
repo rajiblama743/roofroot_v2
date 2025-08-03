@@ -26,9 +26,9 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="flex-1 p-4 sm:p-6">
+            <div className="flex-1 p-3 sm:p-4 lg:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-2">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 line-clamp-1">
+                <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 line-clamp-1">
                   {listing.title}
                 </h3>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold self-start ${
@@ -40,19 +40,19 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
                 </span>
               </div>
               
-              <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+              <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
                 {listing.description}
               </p>
               
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                <div className="flex items-center text-gray-500 text-sm">
-                  <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+                <div className="flex items-center text-gray-500 text-xs sm:text-sm">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                   <span className="line-clamp-1">{listing.location}</span>
                 </div>
                 
                 <div className="flex items-center text-green-600 font-semibold">
-                  <DollarSign className="w-4 h-4 mr-1 flex-shrink-0" />
-                  <span className="text-sm sm:text-base">{formatPrice(listing.price)}</span>
+                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm lg:text-base">{formatPrice(listing.price)}</span>
                 </div>
               </div>
               
@@ -86,7 +86,7 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
     <Link href={`/properties/${listing.id}`} className="block">
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         {/* Property Image */}
-        <div className="relative h-40 sm:h-48 overflow-hidden">
+        <div className="relative h-32 sm:h-40 lg:h-48 overflow-hidden">
           <img
             src={listing.images && listing.images.length > 0 
               ? listing.images[0] 
@@ -95,7 +95,7 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
             alt={listing.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+          <div className="absolute top-2 sm:top-3 lg:top-4 left-2 sm:left-3 lg:left-4">
             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
               listing.type === 'sale' 
                 ? 'bg-green-100 text-green-800' 
@@ -107,24 +107,24 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
         </div>
 
         {/* Property Details */}
-        <div className="p-4 sm:p-6">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
+        <div className="p-3 sm:p-4 lg:p-6">
+          <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
             {listing.title}
           </h3>
           
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          <p className="text-gray-600 text-xs sm:text-sm mb-3 line-clamp-2">
             {listing.description}
           </p>
 
-          <div className="flex items-center text-gray-500 text-sm mb-3">
-            <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
+          <div className="flex items-center text-gray-500 text-xs sm:text-sm mb-3">
+            <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
             <span className="line-clamp-1">{listing.location}</span>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center text-green-600 font-semibold">
-              <DollarSign className="w-4 h-4 mr-1 flex-shrink-0" />
-              <span className="text-sm sm:text-base">{formatPrice(listing.price)}</span>
+              <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
+              <span className="text-xs sm:text-sm lg:text-base">{formatPrice(listing.price)}</span>
             </div>
             
             <div className="flex items-center text-gray-500 text-xs">
@@ -134,11 +134,11 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
           </div>
 
           {listing.createdBy && (
-            <div className="flex items-center mt-3 pt-3 border-t border-gray-100">
-              <Building2 className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+            <div className="flex items-center pt-3 border-t border-gray-100">
+              <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-2 flex-shrink-0" />
               <Link 
                 href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
-                className="text-xs text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors"
+                className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors flex-1 min-w-0"
                 onClick={(e) => e.stopPropagation()}
               >
                 {listing.createdBy.agencyName || listing.createdBy.name}

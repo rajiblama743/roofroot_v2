@@ -49,21 +49,21 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+        <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href={user?.role === 'agency' ? "/dashboard" : "/"} className="flex items-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-white" />
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">RoofRoot</span>
+              <span className="ml-2 text-base sm:text-lg lg:text-xl font-bold text-gray-900">RoofRoot</span>
             </Link>
           </div>
 
           {/* Desktop Navigation - Only show for non-agency users */}
           {shouldShowNavigation && (
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden lg:flex space-x-6 xl:space-x-8">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -71,7 +71,7 @@ const Header = () => {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      'flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors',
+                      'flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md transition-colors',
                       pathname === item.href
                         ? 'text-blue-600 bg-blue-50'
                         : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
@@ -86,16 +86,16 @@ const Header = () => {
           )}
 
           {/* Right side: Auth buttons and mobile menu */}
-          <div className="flex items-center justify-end space-x-2 sm:space-x-4">
+          <div className="flex items-center justify-end space-x-1 sm:space-x-2 lg:space-x-4">
             {/* Auth buttons - Show on all screen sizes */}
             {user ? (
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  className="flex items-center space-x-1 sm:space-x-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                    <span className="text-white text-xs sm:text-sm font-medium">
                       {user.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -104,7 +104,7 @@ const Header = () => {
 
                 {/* User Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-60 border border-gray-200">
+                  <div className="absolute right-0 mt-2 w-40 sm:w-48 bg-white rounded-md shadow-lg py-1 z-60 border border-gray-200">
                     {userMenuItems.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -115,9 +115,9 @@ const Header = () => {
                             setIsUserMenuOpen(false);
                             if (item.onClick) item.onClick();
                           }}
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="flex items-center px-3 sm:px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                         >
-                          <Icon className="w-4 h-4 mr-3" />
+                          <Icon className="w-4 h-4 mr-2 sm:mr-3" />
                           {item.name}
                         </Link>
                       );
@@ -126,16 +126,16 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-2 sm:space-x-4">
+              <div className="flex items-center space-x-1 sm:space-x-2 lg:space-x-4">
                 <Link
                   href="/login"
-                  className="flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors whitespace-nowrap px-2 py-2 sm:px-3 sm:py-2"
+                  className="flex items-center text-xs sm:text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors whitespace-nowrap px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="flex items-center bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap"
+                  className="flex items-center bg-blue-600 text-white px-2 py-2 sm:px-3 lg:px-4 rounded-md text-xs sm:text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap"
                 >
                   Sign Up
                 </Link>
@@ -146,13 +146,13 @@ const Header = () => {
             {shouldShowNavigation && (
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-colors touch-manipulation"
+                className="lg:hidden flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-colors touch-manipulation"
                 aria-label="Toggle mobile menu"
               >
                 {isMenuOpen ? (
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5 sm:w-6 sm:h-6" />
                 ) : (
-                  <Menu className="w-6 h-6" />
+                  <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
                 )}
               </button>
             )}
@@ -161,31 +161,39 @@ const Header = () => {
 
         {/* Mobile Navigation - Only show for non-agency users */}
         {shouldShowNavigation && isMenuOpen && (
-          <div className="md:hidden relative z-60">
+          <div className="lg:hidden relative z-60">
             <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200 bg-white">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setIsMenuOpen(false)}
-                    className={cn(
-                      'flex items-center px-3 py-3 text-base font-medium rounded-md transition-colors touch-manipulation',
-                      pathname === item.href
-                        ? 'text-blue-600 bg-blue-50'
-                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                  <div key={item.name}>
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className={cn(
+                        'flex items-center px-3 py-3 text-base font-medium rounded-md transition-colors touch-manipulation',
+                        pathname === item.href
+                          ? 'text-blue-600 bg-blue-50'
+                          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
+                      )}
+                      style={{ minHeight: '48px' }} // Ensure minimum touch target size
+                    >
+                      <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                      {item.name}
+                    </Link>
+                    {item.name === 'Properties' && (
+                      <div className="px-3 pb-2">
+                        <p className="text-xs text-gray-500 leading-relaxed">
+                          Discover verified properties from trusted agencies
+                        </p>
+                      </div>
                     )}
-                    style={{ minHeight: '44px' }} // Ensure minimum touch target size
-                  >
-                    <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
-                    {item.name}
-                  </Link>
+                  </div>
                 );
               })}
               
               {user && (
-                <div className="border-t border-gray-200 pt-4">
+                <div className="border-t border-gray-200 pt-4 mt-4">
                   {userMenuItems.map((item) => {
                     const Icon = item.icon;
                     return (
@@ -197,7 +205,7 @@ const Header = () => {
                           if (item.onClick) item.onClick();
                         }}
                         className="flex items-center px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors touch-manipulation"
-                        style={{ minHeight: '44px' }} // Ensure minimum touch target size
+                        style={{ minHeight: '48px' }} // Ensure minimum touch target size
                       >
                         <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
                         {item.name}
