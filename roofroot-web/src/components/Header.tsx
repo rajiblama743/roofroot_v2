@@ -166,29 +166,21 @@ const Header = () => {
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <div key={item.name}>
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={cn(
-                        'flex items-center px-3 py-3 text-base font-medium rounded-md transition-colors touch-manipulation',
-                        pathname === item.href
-                          ? 'text-blue-600 bg-blue-50'
-                          : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
-                      )}
-                      style={{ minHeight: '48px' }} // Ensure minimum touch target size
-                    >
-                      <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
-                      {item.name}
-                    </Link>
-                    {item.name === 'Properties' && (
-                      <div className="px-3 pb-2">
-                        <p className="text-xs text-gray-500 leading-relaxed">
-                          Discover verified properties from trusted agencies
-                        </p>
-                      </div>
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    onClick={() => setIsMenuOpen(false)}
+                    className={cn(
+                      'flex items-center px-3 py-3 text-base font-medium rounded-md transition-colors touch-manipulation',
+                      pathname === item.href
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                     )}
-                  </div>
+                    style={{ minHeight: '48px' }} // Ensure minimum touch target size
+                  >
+                    <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
+                    {item.name}
+                  </Link>
                 );
               })}
               
