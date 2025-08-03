@@ -57,6 +57,7 @@ export const API_ENDPOINTS = {
   UPDATE_LISTING: '/listings/:id',
   DELETE_LISTING: '/listings/:id',
   GET_MY_LISTINGS: '/listings/my/listings',
+  GET_LISTINGS_BY_AGENCY: '/listings/by-agency/:agencyName',
 } as const;
 
 // API Client Functions
@@ -121,6 +122,14 @@ export const apiClient = {
   
   getMyListings: async () => {
     const response = await api.get(API_ENDPOINTS.GET_MY_LISTINGS);
+    return response.data;
+  },
+  
+  getListingsByAgency: async (agencyName: string, params?: ListingFilters) => {
+    const response = await api.get(
+      API_ENDPOINTS.GET_LISTINGS_BY_AGENCY.replace(':agencyName', encodeURIComponent(agencyName)),
+      { params }
+    );
     return response.data;
   },
 };

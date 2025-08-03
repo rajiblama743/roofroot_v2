@@ -379,3 +379,82 @@ export const getMyListings = async (req: AuthenticatedListingRequest, res: Respo
     });
   }
 }; 
+
+// Get listings by agency name (public)
+export const getListingsByAgency = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const agencyName = decodeURIComponent(req.params.agencyName);
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 12;
+
+    const skip = (page - 1) * limit;
+
+    // First, find users that match the agency name
+    const User = require('../models/User').default;
+    
+    const matchingUsers = await User.find({
+      $or: [
+        { agencyName: { $regex: agencyName, $options: 'i' } },
+        { name: { $regex: agencyName, $options: 'i' } }
+      ]
+    }).select('_id name agencyName');
+
+    if (matchingUsers.length === 0) {
+      // No users found with this agency name
+      res.status(200).json({
+        success: true,
+        message: 'Agency listings retrieved successfully',
+        listings: [],
+        agencyInfo: null,
+        total: 0,
+        page,
+        limit,
+        totalPages: 0
+      });
+      return;
+    }
+
+    // Get user IDs that match
+    const userIds = matchingUsers.map((user: any) => user._id);
+
+    // Find listings created by these users
+    const query = { createdBy: { $in: userIds } };
+
+    // Execute query with pagination
+    const listings = await Listing.find(query)
+      .populate('createdBy', 'name email agencyName')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination
+    const total = await Listing.countDocuments(query);
+
+    // Get agency info from the first listing (if any)
+    let agencyInfo = null;
+    if (listings.length > 0 && listings[0].createdBy) {
+      const createdBy = listings[0].createdBy as any;
+      agencyInfo = {
+        name: createdBy.name,
+        agencyName: createdBy.agencyName
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Agency listings retrieved successfully',
+      listings,
+      agencyInfo,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Get listings by agency error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while retrieving agency listings'
+    });
+  }
+}; 

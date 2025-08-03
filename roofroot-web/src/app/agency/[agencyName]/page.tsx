@@ -1,0 +1,265 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
+import { ArrowLeft, Building2, Calendar, MapPin, DollarSign } from 'lucide-react';
+import { apiClient, Listing, ListingFilters } from '@/lib/api';
+import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils } from '@/lib/utils';
+import PropertyCard from '@/components/PropertyCard';
+import Link from 'next/link';
+import toast from 'react-hot-toast';
+
+interface AgencyInfo {
+  name: string;
+  agencyName?: string;
+}
+
+export default function AgencyListingsPage() {
+  const params = useParams();
+  const router = useRouter();
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [agencyInfo, setAgencyInfo] = useState<AgencyInfo | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [pagination, setPagination] = useState({
+    total: 0,
+    page: 1,
+    limit: 12,
+    totalPages: 0,
+  });
+
+  const agencyName = decodeURIComponent(params.agencyName as string);
+
+  useEffect(() => {
+    fetchAgencyListings();
+  }, [agencyName]);
+
+  const fetchAgencyListings = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await apiClient.getListingsByAgency(agencyName, {
+        page,
+        limit: 12
+      });
+      
+      if (response.success) {
+        setListings(response.listings);
+        setAgencyInfo(response.agencyInfo);
+        setPagination({
+          total: response.total,
+          page: response.page,
+          limit: response.limit,
+          totalPages: response.totalPages,
+        });
+      } else {
+        setError(response.message || 'Failed to load agency listings');
+      }
+    } catch (err: any) {
+      console.error('Error fetching agency listings:', err);
+      if (err.response?.status === 404) {
+        setError('Agency not found. The agency may not exist or have no listings.');
+      } else {
+        setError('Failed to load agency listings. Please try again later.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePageChange = (page: number) => {
+    fetchAgencyListings(page);
+  };
+
+  if (loading && listings.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Agency Not Found</h1>
+            <p className="text-gray-600 mb-6">{error}</p>
+            <Link
+              href="/properties"
+              className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Properties
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const displayName = agencyInfo?.agencyName || agencyInfo?.name || agencyName;
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <Link
+              href="/properties"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium mr-4"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Properties
+            </Link>
+          </div>
+          
+          <div className="flex items-center mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mr-4">
+              <Building2 className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Listings by {displayName}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                {pagination.total} verified properties from this agency
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className="text-sm font-medium text-gray-700">View:</span>
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`p-2 rounded-md transition-colors ${
+                  viewMode === 'grid'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`p-2 rounded-md transition-colors ${
+                  viewMode === 'list'
+                    ? 'bg-blue-100 text-blue-600'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Results */}
+        {listings.length === 0 ? (
+          <div className="text-center py-12">
+            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">No Listings Found</h2>
+            <p className="text-gray-500 mb-6">
+              This agency doesn't have any active listings at the moment.
+            </p>
+            <Link
+              href="/properties"
+              className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Browse All Properties
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Properties Grid/List */}
+            <div className={`grid gap-6 ${
+              viewMode === 'grid' 
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                : 'grid-cols-1'
+            }`}>
+              {listings.map((listing) => (
+                <PropertyCard 
+                  key={listing.id} 
+                  listing={listing} 
+                  viewMode={viewMode}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {pagination.totalPages > 1 && (
+              <div className="mt-12 flex items-center justify-center">
+                <nav className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handlePageChange(pagination.page - 1)}
+                    disabled={pagination.page <= 1}
+                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
+                  </button>
+
+                  {paginationUtils.generatePageNumbers(
+                    pagination.page, 
+                    pagination.totalPages
+                  ).map((pageNum) => (
+                    <button
+                      key={pageNum}
+                      onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
+                      className={`px-3 py-2 rounded-md text-sm font-medium ${
+                        pageNum === pagination.page
+                          ? 'bg-blue-600 text-white'
+                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  ))}
+
+                  <button
+                    onClick={() => handlePageChange(pagination.page + 1)}
+                    disabled={pagination.page >= pagination.totalPages}
+                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                </nav>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+} 

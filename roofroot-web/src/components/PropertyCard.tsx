@@ -65,7 +65,13 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
                 {listing.createdBy && (
                   <div className="flex items-center text-gray-500 text-xs">
                     <Building2 className="w-3 h-3 mr-1 flex-shrink-0" />
-                    <span className="line-clamp-1">{listing.createdBy.agencyName || listing.createdBy.name}</span>
+                    <Link 
+                      href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                      className="line-clamp-1 hover:text-blue-600 transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {listing.createdBy.agencyName || listing.createdBy.name}
+                    </Link>
                   </div>
                 )}
               </div>
@@ -130,9 +136,13 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
           {listing.createdBy && (
             <div className="flex items-center mt-3 pt-3 border-t border-gray-100">
               <Building2 className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
-              <span className="text-xs text-gray-500 line-clamp-1">
+              <Link 
+                href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                className="text-xs text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {listing.createdBy.agencyName || listing.createdBy.name}
-              </span>
+              </Link>
             </div>
           )}
         </div>

@@ -314,9 +314,12 @@ export default function PropertyDetailPage() {
                       <Building2 className="w-5 h-5 text-white" />
                     </div>
                     <div className="ml-3">
-                      <p className="text-sm font-semibold text-gray-900">
+                      <Link 
+                        href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                        className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+                      >
                         {listing.createdBy.agencyName || listing.createdBy.name}
-                      </p>
+                      </Link>
                       <p className="text-xs text-gray-500">Verified Agency</p>
                     </div>
                   </div>

@@ -6,6 +6,7 @@ import {
   updateListing,
   deleteListing,
   getMyListings,
+  getListingsByAgency,
   validateCreateListing,
   validateUpdateListing
 } from '../controllers/listingController';
@@ -20,6 +21,7 @@ const router = Router();
 
 // Public routes (no authentication required)
 router.get('/', getAllListings); // Get all listings with filtering and pagination
+router.get('/by-agency/:agencyName', getListingsByAgency); // Get listings by agency name
 router.get('/:id', getListingById); // Get single listing by ID
 
 // Protected routes (authentication required)

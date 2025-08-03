@@ -130,7 +130,13 @@ const FeaturedListings = () => {
               <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
                 <div className="flex items-center text-xs sm:text-sm text-gray-600">
                   <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="line-clamp-1">{listing.createdBy.agencyName || listing.createdBy.name}</span>
+                  <Link 
+                    href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                    className="line-clamp-1 hover:text-blue-600 transition-colors"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {listing.createdBy.agencyName || listing.createdBy.name}
+                  </Link>
                 </div>
               </div>
             )}
