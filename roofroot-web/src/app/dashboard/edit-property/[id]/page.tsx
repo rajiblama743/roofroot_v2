@@ -3,14 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, Save, X } from 'lucide-react';
-import { apiClient } from '@/lib/api';
-import { authUtils } from '@/lib/utils';
-import { handleListingError } from '@/lib/errorHandler';
 
-interface EditListingForm {
+interface ListingData {
+  _id: string;
   title: string;
   description: string;
   price: number;
@@ -21,6 +18,11 @@ interface EditListingForm {
   carBay?: number;
   area?: number;
   images?: string[];
+  createdBy?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
 }
 
 export default function EditPropertyPage() {
@@ -28,96 +30,152 @@ export default function EditPropertyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [listing, setListing] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [listing, setListing] = useState<ListingData | null>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset
-  } = useForm<EditListingForm>({
-    defaultValues: {
-      title: '',
-      description: '',
-      price: 0,
-      type: 'sale',
-      location: '',
-      bedrooms: 0,
-      bathrooms: 0,
-      carBay: 0,
-      area: 0,
-      images: []
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [price, setPrice] = useState('');
+  const [type, setType] = useState<'sale' | 'lease'>('sale');
+  const [location, setLocation] = useState('');
+  const [bedrooms, setBedrooms] = useState('');
+  const [bathrooms, setBathrooms] = useState('');
+  const [carBay, setCarBay] = useState('');
+  const [area, setArea] = useState('');
+
+  // Get user from localStorage
+  const getUser = () => {
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('user');
+      return userStr ? JSON.parse(userStr) : null;
     }
-  });
+    return null;
+  };
 
-  const user = authUtils.getUser();
+  // Get auth token
+  const getToken = () => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('token');
+    }
+    return null;
+  };
+
+  // Fetch listing data
+  const fetchListing = async () => {
+    try {
+      setLoading(true);
+      const token = getToken();
+      
+      if (!token) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:3001/api/listings/${params.id}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        const listingData = data.listing;
+        
+        // Check if user owns this listing
+        const user = getUser();
+        if (listingData.createdBy && listingData.createdBy._id !== user?._id) {
+          toast.error('You can only edit your own listings');
+          router.push('/dashboard');
+          return;
+        }
+
+        setListing(listingData);
+        
+        // Set form values
+        setTitle(listingData.title || '');
+        setDescription(listingData.description || '');
+        setPrice(listingData.price?.toString() || '');
+        setType(listingData.type || 'sale');
+        setLocation(listingData.location || '');
+        setBedrooms(listingData.bedrooms?.toString() || '');
+        setBathrooms(listingData.bathrooms?.toString() || '');
+        setCarBay(listingData.carBay?.toString() || '');
+        setArea(listingData.area?.toString() || '');
+      } else {
+        setError('Listing not found');
+      }
+    } catch (error) {
+      console.error('Error fetching listing:', error);
+      setError('Failed to load listing');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Check if user is logged in and is an agency
+    const user = getUser();
     if (!user || user.role !== 'agency') {
       router.push('/login');
       return;
     }
 
-    const fetchListing = async () => {
-      try {
-        const response = await apiClient.getListing(params.id as string);
-        
-        if (response.success && response.listing) {
-          const listingData = response.listing;
-          
-          // Check if user owns this listing
-          if (listingData.createdBy && listingData.createdBy._id !== user._id) {
-            toast.error('You can only edit your own listings');
-            router.push('/dashboard');
-            return;
-          }
-
-          setListing(listingData);
-          
-          // Only reset form once
-          reset({
-            title: listingData.title,
-            description: listingData.description,
-            price: listingData.price,
-            type: listingData.type,
-            location: listingData.location,
-            bedrooms: listingData.bedrooms || 0,
-            bathrooms: listingData.bathrooms || 0,
-            carBay: listingData.carBay || 0,
-            area: listingData.area || 0,
-            images: listingData.images || []
-          });
-        } else {
-          setError('Listing not found');
-        }
-      } catch (error: any) {
-        handleListingError(error);
-        setError('Failed to load listing');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchListing();
-  }, [params.id, user, router, reset]);
+  }, [params.id, router]);
 
-  const onSubmit = async (data: EditListingForm) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     
+    // Validation
+    if (!title.trim() || !description.trim() || !location.trim() || !price.trim()) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const priceNum = parseFloat(price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      toast.error('Please enter a valid price');
+      return;
+    }
+
     setSubmitting(true);
     
     try {
-      const response = await apiClient.updateListing(params.id as string, data);
-      
-      if (response.success) {
+      const token = getToken();
+      const formData = {
+        title: title.trim(),
+        description: description.trim(),
+        price: priceNum,
+        type,
+        location: location.trim(),
+        bedrooms: bedrooms ? parseInt(bedrooms) : undefined,
+        bathrooms: bathrooms ? parseInt(bathrooms) : undefined,
+        carBay: carBay ? parseInt(carBay) : undefined,
+        area: area ? parseFloat(area) : undefined
+      };
+
+      const response = await fetch(`http://localhost:3001/api/listings/${params.id}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
         toast.success('Listing updated successfully');
         router.push(`/dashboard/listings/${params.id}`);
       } else {
-        toast.error(response.message || 'Failed to update listing');
+        toast.error(data.message || 'Failed to update listing');
       }
-    } catch (error: any) {
-      handleListingError(error);
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      toast.error('Failed to update listing');
     } finally {
       setSubmitting(false);
     }
@@ -179,157 +237,157 @@ export default function EditPropertyPage() {
 
         {/* Form */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Basic Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
                   Title *
                 </label>
                 <input
+                  id="title"
+                  name="title"
                   type="text"
-                  {...register('title', { required: 'Title is required' })}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter property title"
+                  required
                 />
-                {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
                   Type *
                 </label>
                 <select
-                  {...register('type', { required: 'Type is required' })}
+                  id="type"
+                  name="type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value as 'sale' | 'lease')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  required
                 >
                   <option value="sale">For Sale</option>
                   <option value="lease">For Lease</option>
                 </select>
-                {errors.type && (
-                  <p className="mt-1 text-sm text-red-600">{errors.type.message}</p>
-                )}
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
                 Location *
               </label>
               <input
+                id="location"
+                name="location"
                 type="text"
-                {...register('location', { required: 'Location is required' })}
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter property location"
+                required
               />
-              {errors.location && (
-                <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
-              )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
                 Description *
               </label>
               <textarea
-                {...register('description', { required: 'Description is required' })}
+                id="description"
+                name="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
                 rows={4}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter property description"
+                required
               />
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-600">{errors.description.message}</p>
-              )}
             </div>
 
             {/* Property Details */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
                   Price *
                 </label>
                 <input
+                  id="price"
+                  name="price"
                   type="number"
-                  {...register('price', { 
-                    required: 'Price is required',
-                    min: { value: 0, message: 'Price must be positive' }
-                  })}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter price"
+                  min="0"
+                  step="0.01"
+                  required
                 />
-                {errors.price && (
-                  <p className="mt-1 text-sm text-red-600">{errors.price.message}</p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700 mb-2">
                   Bedrooms
                 </label>
                 <input
+                  id="bedrooms"
+                  name="bedrooms"
                   type="number"
-                  {...register('bedrooms', { 
-                    min: { value: 0, message: 'Bedrooms must be positive' }
-                  })}
+                  value={bedrooms}
+                  onChange={(e) => setBedrooms(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Number of bedrooms"
+                  min="0"
                 />
-                {errors.bedrooms && (
-                  <p className="mt-1 text-sm text-red-600">{errors.bedrooms.message}</p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700 mb-2">
                   Bathrooms
                 </label>
                 <input
+                  id="bathrooms"
+                  name="bathrooms"
                   type="number"
-                  {...register('bathrooms', { 
-                    min: { value: 0, message: 'Bathrooms must be positive' }
-                  })}
+                  value={bathrooms}
+                  onChange={(e) => setBathrooms(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Number of bathrooms"
+                  min="0"
                 />
-                {errors.bathrooms && (
-                  <p className="mt-1 text-sm text-red-600">{errors.bathrooms.message}</p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="carBay" className="block text-sm font-medium text-gray-700 mb-2">
                   Car Bay
                 </label>
                 <input
+                  id="carBay"
+                  name="carBay"
                   type="number"
-                  {...register('carBay', { 
-                    min: { value: 0, message: 'Car Bay must be positive' }
-                  })}
+                  value={carBay}
+                  onChange={(e) => setCarBay(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Number of car bays"
+                  min="0"
                 />
-                {errors.carBay && (
-                  <p className="mt-1 text-sm text-red-600">{errors.carBay.message}</p>
-                )}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="area" className="block text-sm font-medium text-gray-700 mb-2">
                   Area (sq ft)
                 </label>
                 <input
+                  id="area"
+                  name="area"
                   type="number"
-                  {...register('area', { 
-                    min: { value: 0, message: 'Area must be positive' }
-                  })}
+                  value={area}
+                  onChange={(e) => setArea(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Property area"
+                  min="0"
                 />
-                {errors.area && (
-                  <p className="mt-1 text-sm text-red-600">{errors.area.message}</p>
-                )}
               </div>
             </div>
 
