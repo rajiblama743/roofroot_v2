@@ -57,7 +57,7 @@ const Header = () => {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-white" />
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">RoofRoot</span>
+              <span className="ml-2 text-lg sm:text-xl font-bold text-gray-900">RoofRoot</span>
             </Link>
           </div>
 
@@ -85,8 +85,9 @@ const Header = () => {
             </nav>
           )}
 
-          {/* User Menu / Auth Buttons */}
-          <div className="flex items-center space-x-4">
+          {/* Right side: Auth buttons and mobile menu */}
+          <div className="flex items-center justify-end space-x-2 sm:space-x-4">
+            {/* Auth buttons - Show on all screen sizes */}
             {user ? (
               <div className="relative">
                 <button
@@ -103,7 +104,7 @@ const Header = () => {
 
                 {/* User Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-60 border border-gray-200">
                     {userMenuItems.map((item) => {
                       const Icon = item.icon;
                       return (
@@ -125,16 +126,16 @@ const Header = () => {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2 sm:space-x-4">
                 <Link
                   href="/login"
-                  className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                  className="flex items-center text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors whitespace-nowrap px-2 py-2 sm:px-3 sm:py-2"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors"
+                  className="flex items-center bg-blue-600 text-white px-3 py-2 sm:px-4 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap"
                 >
                   Sign Up
                 </Link>
@@ -145,7 +146,8 @@ const Header = () => {
             {shouldShowNavigation && (
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="md:hidden p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-colors"
+                className="md:hidden flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 transition-colors touch-manipulation"
+                aria-label="Toggle mobile menu"
               >
                 {isMenuOpen ? (
                   <X className="w-6 h-6" />
@@ -159,8 +161,8 @@ const Header = () => {
 
         {/* Mobile Navigation - Only show for non-agency users */}
         {shouldShowNavigation && isMenuOpen && (
-          <div className="md:hidden">
-            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200">
+          <div className="md:hidden relative z-60">
+            <div className="px-2 pt-2 pb-3 space-y-1 border-t border-gray-200 bg-white">
               {navigation.map((item) => {
                 const Icon = item.icon;
                 return (
@@ -169,13 +171,14 @@ const Header = () => {
                     href={item.href}
                     onClick={() => setIsMenuOpen(false)}
                     className={cn(
-                      'flex items-center px-3 py-2 text-base font-medium rounded-md transition-colors',
+                      'flex items-center px-3 py-3 text-base font-medium rounded-md transition-colors touch-manipulation',
                       pathname === item.href
                         ? 'text-blue-600 bg-blue-50'
                         : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                     )}
+                    style={{ minHeight: '44px' }} // Ensure minimum touch target size
                   >
-                    <Icon className="w-5 h-5 mr-3" />
+                    <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
                     {item.name}
                   </Link>
                 );
@@ -193,9 +196,10 @@ const Header = () => {
                           setIsMenuOpen(false);
                           if (item.onClick) item.onClick();
                         }}
-                        className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors"
+                        className="flex items-center px-3 py-3 text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 transition-colors touch-manipulation"
+                        style={{ minHeight: '44px' }} // Ensure minimum touch target size
                       >
-                        <Icon className="w-5 h-5 mr-3" />
+                        <Icon className="w-5 h-5 mr-3 flex-shrink-0" />
                         {item.name}
                       </Link>
                     );
@@ -207,14 +211,15 @@ const Header = () => {
         )}
       </div>
 
-      {/* Click outside to close dropdowns */}
+      {/* Click outside to close dropdowns - Only show when menus are open */}
       {(isUserMenuOpen || isMenuOpen) && (
         <div
-          className="fixed inset-0 z-40"
+          className="fixed inset-0 z-40 bg-transparent"
           onClick={() => {
             setIsUserMenuOpen(false);
             setIsMenuOpen(false);
           }}
+          style={{ pointerEvents: 'auto' }}
         />
       )}
     </header>
