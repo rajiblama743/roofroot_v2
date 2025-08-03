@@ -133,55 +133,55 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <div className="flex items-center">
-              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
-              <div className="ml-3 sm:ml-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-lg shadow-md p-2 sm:p-4 lg:p-6 flex flex-col justify-center min-h-[80px] sm:min-h-0 sm:aspect-auto lg:aspect-auto">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-blue-600 mb-1 sm:mb-0 sm:mr-2 lg:mr-3" />
+              <div className="sm:ml-2 lg:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Total Listings</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{listings.length}</p>
+                <p className="text-sm sm:text-xl lg:text-2xl font-bold text-gray-900">{listings.length}</p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <div className="flex items-center">
-              <DollarSign className="w-6 h-6 sm:w-8 sm:h-8 text-green-600" />
-              <div className="ml-3 sm:ml-4">
+          <div className="bg-white rounded-lg shadow-md p-2 sm:p-4 lg:p-6 flex flex-col justify-center min-h-[80px] sm:min-h-0 sm:aspect-auto lg:aspect-auto">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+              <DollarSign className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-green-600 mb-1 sm:mb-0 sm:mr-2 lg:mr-3" />
+              <div className="sm:ml-2 lg:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">For Sale</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                <p className="text-sm sm:text-xl lg:text-2xl font-bold text-gray-900">
                   {listings.filter(l => l.type === 'sale').length}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <div className="flex items-center">
-              <Calendar className="w-6 h-6 sm:w-8 sm:h-8 text-purple-600" />
-              <div className="ml-3 sm:ml-4">
+          <div className="bg-white rounded-lg shadow-md p-2 sm:p-4 lg:p-6 flex flex-col justify-center min-h-[80px] sm:min-h-0 sm:aspect-auto lg:aspect-auto">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+              <Calendar className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-purple-600 mb-1 sm:mb-0 sm:mr-2 lg:mr-3" />
+              <div className="sm:ml-2 lg:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">For Lease</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">
+                <p className="text-sm sm:text-xl lg:text-2xl font-bold text-gray-900">
                   {listings.filter(l => l.type === 'lease').length}
                 </p>
               </div>
             </div>
           </div>
           
-          <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
-            <div className="flex items-center">
-              <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-orange-600" />
-              <div className="ml-3 sm:ml-4">
+          <div className="bg-white rounded-lg shadow-md p-2 sm:p-4 lg:p-6 flex flex-col justify-center min-h-[80px] sm:min-h-0 sm:aspect-auto lg:aspect-auto">
+            <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
+              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-orange-600 mb-1 sm:mb-0 sm:mr-2 lg:mr-3" />
+              <div className="sm:ml-2 lg:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Active Listings</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{listings.length}</p>
+                <p className="text-sm sm:text-xl lg:text-2xl font-bold text-gray-900">{listings.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6 sm:mb-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+        <div className="bg-white rounded-lg shadow-md p-3 sm:p-4 lg:p-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <input
@@ -189,7 +189,7 @@ export default function DashboardPage() {
                 placeholder="Search your listings..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
             
@@ -225,7 +225,7 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-600">
               {filteredListings.length} listing{filteredListings.length !== 1 ? 's' : ''} found
             </p>
-            <div className="flex items-center space-x-2">
+            <div className="hidden sm:flex items-center space-x-2">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-md transition-colors ${
