@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { apiClient, Listing } from '@/lib/api';
 import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
+import { handleListingError } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 
@@ -51,8 +52,8 @@ export default function DashboardPage() {
       } else {
         setError('Failed to load listings');
       }
-    } catch (err) {
-      console.error('Error fetching listings:', err);
+    } catch (err: any) {
+      handleListingError(err);
       setError('Failed to load listings');
     } finally {
       setLoading(false);
@@ -68,9 +69,8 @@ export default function DashboardPage() {
       } else {
         toast.error('Failed to delete listing.');
       }
-    } catch (err) {
-      console.error('Error deleting listing:', err);
-      toast.error('Failed to delete listing.');
+    } catch (err: any) {
+      handleListingError(err);
     }
   };
 

@@ -100,7 +100,7 @@ export const validationUtils = {
   },
 
   isValidPhone: (phone: string | undefined): boolean => {
-    if (!phone) return false;
+    if (!phone || phone.trim() === '') return true; // Allow empty phone numbers
     const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
     return phoneRegex.test(phone.replace(/\s/g, ''));
   },

@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Mail, Lock, Building2 } from 'lucide-react';
 import { apiClient, LoginData } from '@/lib/api';
 import { authUtils, validationUtils } from '@/lib/utils';
+import { handleAuthError } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -49,16 +50,7 @@ export default function LoginPage() {
         toast.error(response.message || 'Login failed');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
-      
-      // Handle specific error cases
-      if (error.response?.status === 404) {
-        toast.error('Account not found. Please check your email or register a new account.');
-      } else if (error.response?.status === 401) {
-        toast.error('Email or password is wrong. Please try again.');
-      } else {
-        toast.error('Login failed. Please try again.');
-      }
+      handleAuthError(error);
     } finally {
       setLoading(false);
     }

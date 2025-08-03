@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { authUtils } from '@/lib/utils';
+import { handleListingError } from '@/lib/errorHandler';
 
 interface EditListingForm {
   title: string;
@@ -92,7 +93,7 @@ export default function EditPropertyPage() {
           setError('Listing not found');
         }
       } catch (error: any) {
-        console.error('Error fetching listing:', error);
+        handleListingError(error);
         setError('Failed to load listing');
       } finally {
         setLoading(false);
@@ -116,8 +117,7 @@ export default function EditPropertyPage() {
         toast.error(response.message || 'Failed to update listing');
       }
     } catch (error: any) {
-      console.error('Error updating listing:', error);
-      toast.error('Failed to update listing');
+      handleListingError(error);
     } finally {
       setSubmitting(false);
     }

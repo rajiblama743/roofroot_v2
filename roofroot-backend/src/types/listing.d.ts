@@ -9,6 +9,10 @@ export interface CreateListingRequest {
   location: string;
   type: 'sale' | 'lease';
   images?: string[];
+  bedrooms?: number;
+  bathrooms?: number;
+  carBay?: number;
+  area?: number;
 }
 
 export interface UpdateListingRequest {

@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
+import { handleListingError } from '@/lib/errorHandler';
 
 export default function DashboardListingDetailPage() {
   const params = useParams();
@@ -54,7 +55,7 @@ export default function DashboardListingDetailPage() {
           setError(response.message || 'Failed to load listing details');
         }
       } catch (err: any) {
-        console.error('Error fetching listing:', err);
+        handleListingError(err);
         
         if (err.response?.status === 404) {
           setError('Listing not found. The listing may have been removed or does not exist.');
@@ -85,9 +86,8 @@ export default function DashboardListingDetailPage() {
       } else {
         toast.error('Failed to delete listing');
       }
-    } catch (error) {
-      console.error('Error deleting listing:', error);
-      toast.error('Failed to delete listing');
+    } catch (error: any) {
+      handleListingError(error);
     } finally {
       setDeleting(false);
       setShowDeleteModal(false);

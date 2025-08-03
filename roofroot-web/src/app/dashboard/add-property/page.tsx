@@ -8,6 +8,7 @@ import { toast } from 'react-hot-toast';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { authUtils } from '@/lib/utils';
+import { handleListingError } from '@/lib/errorHandler';
 
 interface CreateListingForm {
   title: string;
@@ -51,7 +52,8 @@ export default function AddPropertyPage() {
   useEffect(() => {
     // Check if user is logged in and is an agency
     if (!user || user.role !== 'agency') {
-      router.push('/login');
+      toast.error('Only agency accounts can create properties. Please contact admin to upgrade your account.');
+      router.push('/dashboard');
       return;
     }
   }, [user, router]);
@@ -60,17 +62,27 @@ export default function AddPropertyPage() {
     setSubmitting(true);
     
     try {
-      const response = await apiClient.createListing(data);
+      // Transform the data to ensure proper types
+      const transformedData = {
+        ...data,
+        price: Number(data.price),
+        bedrooms: data.bedrooms ? Number(data.bedrooms) : undefined,
+        bathrooms: data.bathrooms ? Number(data.bathrooms) : undefined,
+        carBay: data.carBay ? Number(data.carBay) : undefined,
+        area: data.area ? Number(data.area) : undefined,
+      };
+      
+      const response = await apiClient.createListing(transformedData);
       
       if (response.success) {
         toast.success('Property created successfully');
         router.push('/dashboard');
       } else {
+        console.error('API returned error:', response);
         toast.error(response.message || 'Failed to create property');
       }
     } catch (error: any) {
-      console.error('Error creating property:', error);
-      toast.error('Failed to create property');
+      handleListingError(error);
     } finally {
       setSubmitting(false);
     }

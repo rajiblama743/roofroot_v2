@@ -23,6 +23,22 @@ export const validateCreateListing = [
   body('type')
     .isIn(['sale', 'lease'])
     .withMessage('Type must be either sale or lease'),
+  body('bedrooms')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Bedrooms must be a non-negative integer'),
+  body('bathrooms')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Bathrooms must be a non-negative integer'),
+  body('carBay')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Car Bay must be a non-negative integer'),
+  body('area')
+    .optional()
+    .isFloat({ min: 0 })
+    .withMessage('Area must be a positive number'),
   body('images')
     .optional()
     .isArray({ max: 10 })
@@ -77,15 +93,26 @@ export const createListing = async (req: AuthenticatedListingRequest, res: Respo
       res.status(400).json({
         success: false,
         message: 'Validation failed',
-        errors: errors.array().map(err => err.msg)
+        errors: errors.array().map(err => `${err.type === 'field' ? err.path : 'unknown'}: ${err.msg}`)
       });
       return;
     }
 
-    const { title, description, price, location, type, images = [] }: CreateListingRequest = req.body;
+    const { 
+      title, 
+      description, 
+      price, 
+      location, 
+      type, 
+      images = [],
+      bedrooms,
+      bathrooms,
+      carBay,
+      area
+    }: CreateListingRequest = req.body;
     const userId = req.user!._id.toString();
 
-    // Create new listing
+    // Create new listing with all fields
     const listing = new Listing({
       title,
       description,
@@ -93,6 +120,10 @@ export const createListing = async (req: AuthenticatedListingRequest, res: Respo
       location,
       type,
       images,
+      bedrooms: bedrooms || undefined,
+      bathrooms: bathrooms || undefined,
+      carBay: carBay || undefined,
+      area: area || undefined,
       createdBy: userId
     });
 

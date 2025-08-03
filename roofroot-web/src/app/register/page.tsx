@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Building2, ArrowRight } from 'lucide-react';
 import { apiClient, RegisterData } from '@/lib/api';
 import { authUtils, validationUtils } from '@/lib/utils';
+import { handleAuthError } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 
 export default function RegisterPage() {
@@ -30,6 +31,8 @@ export default function RegisterPage() {
         // Remove agency fields for customer registration
         agencyName: undefined,
         agencyDescription: undefined,
+        // Only include phoneNumber if it's not empty
+        phoneNumber: data.phoneNumber?.trim() || undefined,
       };
 
       const response = await apiClient.register(registerData);
@@ -45,8 +48,7 @@ export default function RegisterPage() {
         toast.error(response.message || 'Registration failed');
       }
     } catch (error: any) {
-      console.error('Registration error:', error);
-      toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
+      handleAuthError(error);
     } finally {
       setLoading(false);
     }
@@ -154,7 +156,10 @@ export default function RegisterPage() {
                   type="tel"
                   autoComplete="tel"
                   {...register('phoneNumber', {
-                    validate: (value) => !value || validationUtils.isValidPhone(value) || 'Please enter a valid phone number',
+                    validate: (value) => {
+                      if (!value || value.trim() === '') return true; // Allow empty phone numbers
+                      return validationUtils.isValidPhone(value) || 'Please enter a valid phone number';
+                    },
                   })}
                   className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                     errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
