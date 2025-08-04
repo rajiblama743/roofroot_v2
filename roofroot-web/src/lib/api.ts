@@ -166,6 +166,8 @@ export interface Listing {
     name: string;
     email: string;
     agencyName?: string;
+    phoneNumber?: string;
+    agencyDescription?: string;
   };
   agency?: {
     _id: string;

@@ -397,7 +397,7 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
         { agencyName: { $regex: agencyName, $options: 'i' } },
         { name: { $regex: agencyName, $options: 'i' } }
       ]
-    }).select('_id name agencyName');
+    }).select('_id name agencyName email phoneNumber agencyDescription');
 
     if (matchingUsers.length === 0) {
       // No users found with this agency name
@@ -422,7 +422,7 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
 
     // Execute query with pagination
     const listings = await Listing.find(query)
-      .populate('createdBy', 'name email agencyName')
+      .populate('createdBy', 'name email agencyName phoneNumber agencyDescription')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -436,7 +436,10 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
       const createdBy = listings[0].createdBy as any;
       agencyInfo = {
         name: createdBy.name,
-        agencyName: createdBy.agencyName
+        agencyName: createdBy.agencyName,
+        email: createdBy.email,
+        phoneNumber: createdBy.phoneNumber,
+        agencyDescription: createdBy.agencyDescription
       };
     }
 

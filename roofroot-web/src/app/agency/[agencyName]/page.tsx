@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Building2, Calendar, MapPin, DollarSign } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, MapPin, DollarSign, Mail, Phone } from 'lucide-react';
 import { apiClient, Listing, ListingFilters } from '@/lib/api';
 import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils } from '@/lib/utils';
 import PropertyCard from '@/components/PropertyCard';
@@ -12,6 +12,9 @@ import toast from 'react-hot-toast';
 interface AgencyInfo {
   name: string;
   agencyName?: string;
+  email?: string;
+  phoneNumber?: string;
+  agencyDescription?: string;
 }
 
 export default function AgencyListingsPage() {
@@ -137,18 +140,56 @@ export default function AgencyListingsPage() {
           
           {/* Agency Info */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
-            <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
-                <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+              {/* Left side - Agency info */}
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 text-center sm:text-left flex-1">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
+                  <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight mb-1">
+                    {displayName}
+                  </h1>
+                  
+                  {/* Agency Description */}
+                  {agencyInfo?.agencyDescription && (
+                    <p className="text-sm text-gray-600 mb-3">
+                      {agencyInfo.agencyDescription}
+                    </p>
+                  )}
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight mb-1">
-                  Listings by {displayName}
-                </h1>
-                <p className="text-sm sm:text-base text-gray-600">
-                  {pagination.total} verified properties from this agency
-                </p>
-              </div>
+              
+              {/* Right side - Contact Information */}
+              {(agencyInfo?.email || agencyInfo?.phoneNumber) && (
+                <div className="lg:w-64 lg:border-l lg:border-gray-200 lg:pl-6">
+                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
+                  <div className="space-y-3">
+                    {agencyInfo.email && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <a 
+                          href={`mailto:${agencyInfo.email}`} 
+                          className="hover:text-blue-600 transition-colors truncate"
+                        >
+                          {agencyInfo.email}
+                        </a>
+                      </div>
+                    )}
+                    {agencyInfo.phoneNumber && (
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <a 
+                          href={`tel:${agencyInfo.phoneNumber}`} 
+                          className="hover:text-blue-600 transition-colors"
+                        >
+                          {agencyInfo.phoneNumber}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -156,6 +197,14 @@ export default function AgencyListingsPage() {
         {/* View Mode Toggle */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 mb-4 sm:mb-6">
           <div className="flex items-center justify-between">
+            {/* Property Count - Left Side */}
+            <div className="text-left">
+              <p className="text-sm text-gray-600">
+                {pagination.total} verified properties from this agency
+              </p>
+            </div>
+            
+            {/* View Mode Toggle - Center */}
             <div className="flex items-center gap-2 sm:gap-3">
               <span className="text-sm font-medium text-gray-700">View:</span>
               <button
