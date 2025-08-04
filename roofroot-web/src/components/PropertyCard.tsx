@@ -67,8 +67,14 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
                     <Building2 className="w-3 h-3 mr-1 flex-shrink-0" />
                     <Link 
                       href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
-                      className="line-clamp-1 hover:text-blue-600 transition-colors"
-                      onClick={(e) => e.stopPropagation()}
+                      className="line-clamp-1 hover:text-blue-600 transition-colors cursor-pointer z-10 relative"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (listing.createdBy) {
+                          window.location.href = `/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`;
+                        }
+                      }}
                     >
                       {listing.createdBy.agencyName || listing.createdBy.name}
                     </Link>
@@ -138,8 +144,14 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
               <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-2 flex-shrink-0" />
               <Link 
                 href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
-                className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors text-center sm:text-left flex items-center"
-                onClick={(e) => e.stopPropagation()}
+                className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors text-center sm:text-left flex items-center cursor-pointer z-10 relative"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  if (listing.createdBy) {
+                    window.location.href = `/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`;
+                  }
+                }}
               >
                 {listing.createdBy.agencyName || listing.createdBy.name}
               </Link>
