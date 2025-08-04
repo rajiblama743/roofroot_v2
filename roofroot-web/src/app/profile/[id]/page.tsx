@@ -46,6 +46,7 @@ export default function ProfilePage() {
     phoneNumber: '',
     agencyName: '',
     agencyDescription: '',
+    address: '',
   });
 
   const currentUser = authUtils.getUser();

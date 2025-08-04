@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Building2, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 import { apiClient, Agency, AgencySearchFilters } from '@/lib/api';
 import { formatDate } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
-export default function FindAgencyPage() {
+function FindAgencyContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [agencies, setAgencies] = useState<Agency[]>([]);
@@ -108,95 +108,75 @@ export default function FindAgencyPage() {
     <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">
-            Find Your Nearby Agencies
-          </h1>
-          <p className="text-sm sm:text-base text-gray-600">
-            Discover trusted real estate agencies in your area
-          </p>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Real Estate Agencies</h1>
+          <p className="text-gray-600">Discover trusted real estate agencies in your area</p>
         </div>
 
-        {/* Search Section */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6 sm:mb-8">
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
+        {/* Search Form */}
+        <form onSubmit={handleSearch} className="mb-8">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder="Search by agency name, location, or description..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search agencies by location (e.g., Sydney, Melbourne, Brisbane)"
-                className="block w-full pl-10 pr-3 py-2 sm:py-3 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
             </div>
             <button
               type="submit"
-              className="w-full sm:w-auto px-6 py-2 sm:py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
             >
-              Search Agencies
+              Search
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
 
         {/* Results */}
-        {error ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Agencies Found</h2>
-            <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">{error}</p>
-          </div>
-        ) : agencies.length === 0 && !loading ? (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Agencies Found</h2>
-            <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">
-              {searchParams.get('search') 
-                ? `No agencies found for "${searchParams.get('search')}". Try a different location.`
-                : 'Search for agencies in your area to get started.'
-              }
-            </p>
-          </div>
-        ) : (
+        {agencies.length > 0 ? (
           <>
-            {/* Results Count */}
-            {pagination.total > 0 && (
-              <div className="mb-4 sm:mb-6">
-                <p className="text-sm text-gray-600">
-                  Found {pagination.total} agency{pagination.total !== 1 ? 'ies' : ''}
-                  {searchParams.get('search') && ` in "${searchParams.get('search')}"`}
-                </p>
-              </div>
-            )}
+            <div className="mb-6">
+              <p className="text-gray-600">
+                Found {pagination.total} agency{pagination.total !== 1 ? 'ies' : ''}
+              </p>
+            </div>
 
-            {/* Agencies Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+            {/* Agency Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {agencies.map((agency) => (
                 <div
                   key={agency._id}
-                  onClick={() => handleAgencyClick(agency.agencyName || agency.name)}
+                  onClick={() => handleAgencyClick(agency.agencyName || agency.name || '')}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                 >
-                  {/* Agency Logo/Icon */}
-                  <div className="h-32 sm:h-40 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                    <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
-                  </div>
+                  <div className="p-6">
+                    <div className="flex items-center mb-4">
+                      <Building2 className="w-8 h-8 text-blue-600 mr-3" />
+                      <div>
+                                                 <h3 className="font-semibold text-gray-900 text-lg">
+                           {agency.agencyName || agency.name}
+                         </h3>
+                      </div>
+                    </div>
 
-                  {/* Agency Details */}
-                  <div className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2 line-clamp-1">
-                      {agency.agencyName || agency.name}
-                    </h3>
-                    
                     {agency.agencyDescription && (
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-3">
                         {agency.agencyDescription}
                       </p>
                     )}
 
-                    {/* Contact Information */}
                     <div className="space-y-2">
                       {agency.email && (
                         <div className="flex items-center text-sm text-gray-600">
@@ -204,27 +184,21 @@ export default function FindAgencyPage() {
                           <span className="truncate">{agency.email}</span>
                         </div>
                       )}
-                      
                       {agency.phoneNumber && (
                         <div className="flex items-center text-sm text-gray-600">
                           <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
                           <span>{agency.phoneNumber}</span>
                         </div>
                       )}
-                      
                       {agency.address && (
                         <div className="flex items-start text-sm text-gray-600">
                           <MapPin className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                           <span className="line-clamp-2">{agency.address}</span>
                         </div>
                       )}
-                    </div>
-
-                    {/* Agency Info Footer */}
-                    <div className="mt-4 pt-3 border-t border-gray-100">
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center text-sm text-gray-500">
+                        <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
                         <span>Member since {formatDate(agency.createdAt)}</span>
-                        <span className="text-blue-600 font-medium">View Details</span>
                       </div>
                     </div>
                   </div>
@@ -234,47 +208,84 @@ export default function FindAgencyPage() {
 
             {/* Pagination */}
             {pagination.totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-center">
-                <nav className="flex items-center space-x-1 sm:space-x-2">
-                  <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page <= 1}
-                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-
-                  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNum) => (
+              <div className="flex justify-center">
+                <div className="flex space-x-2">
+                  {pagination.page > 1 && (
                     <button
-                      key={pageNum}
-                      onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-2 rounded-md text-sm font-medium ${
-                        pageNum === pagination.page
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                     >
-                      {pageNum}
+                      Previous
                     </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page >= pagination.totalPages}
-                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </nav>
+                  )}
+                  
+                  {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                    const page = i + 1;
+                    return (
+                      <button
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-4 py-2 rounded-lg transition-colors ${
+                          page === pagination.page
+                            ? 'bg-blue-600 text-white'
+                            : 'border border-gray-300 hover:bg-gray-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    );
+                  })}
+                  
+                  {pagination.page < pagination.totalPages && (
+                    <button
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Next
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </>
+        ) : !loading && (
+          <div className="text-center py-12">
+            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No agencies found</h3>
+            <p className="text-gray-600">
+              {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new agencies.'}
+            </p>
+          </div>
         )}
       </div>
     </div>
+  );
+}
+
+export default function FindAgencyPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+                  <div className="h-48 bg-gray-200"></div>
+                  <div className="p-6">
+                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    }>
+      <FindAgencyContent />
+    </Suspense>
   );
 } 
