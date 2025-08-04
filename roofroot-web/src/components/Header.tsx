@@ -34,6 +34,7 @@ const Header = () => {
   const navigation = [
     { name: 'Home', href: '/', icon: Home },
     { name: 'Properties', href: '/properties', icon: Search },
+    { name: 'Find Agency', href: '/find-agency', icon: Building2 },
     { name: 'About Us', href: '/about', icon: Building2 },
     { name: 'Contact', href: '/contact', icon: Building2 },
   ];

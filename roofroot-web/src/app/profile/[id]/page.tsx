@@ -15,6 +15,7 @@ interface User {
   phoneNumber?: string;
   agencyName?: string;
   agencyDescription?: string;
+  address?: string;
   role: string;
   createdAt: string;
   updatedAt: string;
@@ -26,6 +27,7 @@ interface UpdateFormData {
   phoneNumber: string;
   agencyName: string;
   agencyDescription: string;
+  address: string;
 }
 
 export default function ProfilePage() {
@@ -63,6 +65,7 @@ export default function ProfilePage() {
             phoneNumber: response.user.phoneNumber || '',
             agencyName: response.user.agencyName || '',
             agencyDescription: response.user.agencyDescription || '',
+            address: response.user.address || '',
           });
         } else {
           setError('Failed to load user profile');
@@ -107,6 +110,7 @@ export default function ProfilePage() {
         name: formData.name,
         email: formData.email,
         phoneNumber: formData.phoneNumber,
+        address: formData.address,
       };
 
       // Only include agency fields if user is an agency
@@ -170,6 +174,7 @@ export default function ProfilePage() {
         phoneNumber: user.phoneNumber || '',
         agencyName: user.agencyName || '',
         agencyDescription: user.agencyDescription || '',
+        address: user.address || '',
       });
     }
   };
@@ -337,6 +342,25 @@ export default function ProfilePage() {
                 <div>
                   <p className="text-sm font-medium text-gray-900">Member Since</p>
                   <p className="text-gray-600">{formatDate(user.createdAt)}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                <MapPin className="w-5 h-5 text-gray-400 mr-3" />
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Address</p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      placeholder="Enter your address"
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  ) : (
+                    <p className="text-gray-600">{user.address || '-'}</p>
+                  )}
                 </div>
               </div>
             </div>

@@ -33,6 +33,31 @@ export default function AgencyListingsPage() {
     totalPages: 0,
   });
 
+  // Determine back button destination based on referrer
+  const getBackButtonDestination = () => {
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer;
+      const currentUrl = window.location.href;
+      
+      // Check if we came from find-agency page
+      if (referrer.includes('/find-agency') || referrer.includes('find-agency')) {
+        return '/find-agency';
+      }
+      
+      // Check if we came from search results
+      if (referrer.includes('search') && referrer.includes('agencies')) {
+        return '/find-agency';
+      }
+      
+      // Check if the current URL has a query parameter indicating we came from find-agency
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('from') === 'find-agency') {
+        return '/find-agency';
+      }
+    }
+    return '/properties';
+  };
+
   const agencyName = decodeURIComponent(params.agencyName as string);
 
   useEffect(() => {
@@ -131,11 +156,11 @@ export default function AgencyListingsPage() {
           {/* Back Button */}
           <div className="mb-3 sm:mb-4">
             <Link
-              href="/properties"
+              href={getBackButtonDestination()}
               className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
             >
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              Back to Properties
+              {getBackButtonDestination() === '/find-agency' ? 'Back to Find Agency' : 'Back to Properties'}
             </Link>
           </div>
           
@@ -168,22 +193,22 @@ export default function AgencyListingsPage() {
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
                   <div className="space-y-3">
                     {agencyInfo.email && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-start text-sm text-gray-600">
+                        <Mail className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                         <a 
                           href={`mailto:${agencyInfo.email}`} 
-                          className="hover:text-blue-600 transition-colors truncate"
+                          className="hover:text-blue-600 transition-colors line-clamp-2"
                         >
                           {agencyInfo.email}
                         </a>
                       </div>
                     )}
                     {agencyInfo.phoneNumber && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-start text-sm text-gray-600">
+                        <Phone className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                         <a 
                           href={`tel:${agencyInfo.phoneNumber}`} 
-                          className="hover:text-blue-600 transition-colors"
+                          className="hover:text-blue-600 transition-colors line-clamp-2"
                         >
                           {agencyInfo.phoneNumber}
                         </a>
@@ -227,22 +252,22 @@ export default function AgencyListingsPage() {
                   <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
                   <div className="space-y-3">
                     {agencyInfo.email && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-start text-sm text-gray-600">
+                        <Mail className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                         <a 
                           href={`mailto:${agencyInfo.email}`} 
-                          className="hover:text-blue-600 transition-colors truncate"
+                          className="hover:text-blue-600 transition-colors line-clamp-2"
                         >
                           {agencyInfo.email}
                         </a>
                       </div>
                     )}
                     {agencyInfo.phoneNumber && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <div className="flex items-start text-sm text-gray-600">
+                        <Phone className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                         <a 
                           href={`tel:${agencyInfo.phoneNumber}`} 
-                          className="hover:text-blue-600 transition-colors"
+                          className="hover:text-blue-600 transition-colors line-clamp-2"
                         >
                           {agencyInfo.phoneNumber}
                         </a>

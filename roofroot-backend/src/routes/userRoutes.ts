@@ -5,6 +5,7 @@ import {
   getUserById,
   updateUser,
   deleteUser,
+  searchAgencies,
   validateCreateUser,
   validateUpdateUser
 } from '../controllers/userController';
@@ -18,7 +19,10 @@ import {
 
 const router = Router();
 
-// All user routes require authentication
+// Public routes (no authentication required)
+router.get('/search/agencies', searchAgencies); // Search agencies (public)
+
+// All other user routes require authentication
 router.use(authenticateToken);
 
 // Admin-only routes

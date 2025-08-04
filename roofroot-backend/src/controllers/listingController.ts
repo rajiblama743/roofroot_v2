@@ -397,7 +397,7 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
         { agencyName: { $regex: agencyName, $options: 'i' } },
         { name: { $regex: agencyName, $options: 'i' } }
       ]
-    }).select('_id name agencyName email phoneNumber agencyDescription');
+    }).select('_id name agencyName email phoneNumber agencyDescription address');
 
     if (matchingUsers.length === 0) {
       // No users found with this agency name
@@ -422,7 +422,7 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
 
     // Execute query with pagination
     const listings = await Listing.find(query)
-      .populate('createdBy', 'name email agencyName phoneNumber agencyDescription')
+      .populate('createdBy', 'name email agencyName phoneNumber agencyDescription address')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
@@ -430,16 +430,17 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
     // Get total count for pagination
     const total = await Listing.countDocuments(query);
 
-    // Get agency info from the first listing (if any)
+    // Get agency info from the first matching user (even if no listings)
     let agencyInfo = null;
-    if (listings.length > 0 && listings[0].createdBy) {
-      const createdBy = listings[0].createdBy as any;
+    if (matchingUsers.length > 0) {
+      const user = matchingUsers[0];
       agencyInfo = {
-        name: createdBy.name,
-        agencyName: createdBy.agencyName,
-        email: createdBy.email,
-        phoneNumber: createdBy.phoneNumber,
-        agencyDescription: createdBy.agencyDescription
+        name: user.name,
+        agencyName: user.agencyName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        agencyDescription: user.agencyDescription,
+        address: user.address
       };
     }
 

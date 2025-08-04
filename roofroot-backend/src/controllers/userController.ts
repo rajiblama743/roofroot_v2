@@ -290,4 +290,54 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
       message: 'Internal server error while deleting user'
     });
   }
+};
+
+// Search agencies by location
+export const searchAgencies = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string;
+
+    // Build query for agencies only
+    const query: any = { role: 'agency' };
+    
+    if (search) {
+      // Search in agencyName, address, and agencyDescription
+      query.$or = [
+        { agencyName: { $regex: search, $options: 'i' } },
+        { address: { $regex: search, $options: 'i' } },
+        { agencyDescription: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    // Calculate skip value for pagination
+    const skip = (page - 1) * limit;
+
+    // Execute query with pagination
+    const agencies = await User.find(query)
+      .select('-password')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    // Get total count for pagination
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      success: true,
+      message: 'Agencies retrieved successfully',
+      agencies,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (error) {
+    console.error('Search agencies error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while searching agencies'
+    });
+  }
 }; 

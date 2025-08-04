@@ -49,6 +49,7 @@ export const API_ENDPOINTS = {
   GET_USER: '/users/:id',
   UPDATE_USER: '/users/:id',
   DELETE_USER: '/users/:id',
+  SEARCH_AGENCIES: '/users/search/agencies',
   
   // Listings
   GET_LISTINGS: '/listings',
@@ -91,6 +92,12 @@ export const apiClient = {
   
   deleteUser: async (id: string) => {
     const response = await api.delete(API_ENDPOINTS.DELETE_USER.replace(':id', id));
+    return response.data;
+  },
+  
+  // Agency Search
+  searchAgencies: async (params?: AgencySearchFilters) => {
+    const response = await api.get(API_ENDPOINTS.SEARCH_AGENCIES, { params });
     return response.data;
   },
   
@@ -207,6 +214,26 @@ export interface ListingFilters {
   limit?: number;
 }
 
+export interface AgencySearchFilters {
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface Agency {
+  _id: string;
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  agencyName?: string;
+  agencyDescription?: string;
+  license?: string;
+  address?: string;
+  role: 'agency';
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ApiResponse<T = any> {
   success: boolean;
   message?: string;
@@ -214,5 +241,6 @@ export interface ApiResponse<T = any> {
   token?: string;
   user?: any;
   listings?: Listing[];
+  agencies?: Agency[];
   users?: any[];
 } 
