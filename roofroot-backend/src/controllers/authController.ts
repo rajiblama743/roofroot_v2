@@ -31,6 +31,16 @@ export const validateRegistration = [
     .trim()
     .isLength({ max: 1000 })
     .withMessage('Agency description cannot exceed 1000 characters'),
+  body('license')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('License cannot exceed 200 characters'),
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Address cannot exceed 500 characters'),
   body('role')
     .optional()
     .isIn(['customer'])
@@ -62,7 +72,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { name, email, password, phoneNumber, agencyName, agencyDescription }: RegisterRequest = req.body;
+    const { name, email, password, phoneNumber, agencyName, agencyDescription, license, address }: RegisterRequest = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -82,6 +92,8 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       phoneNumber,
       agencyName,
       agencyDescription,
+      license,
+      address,
       role: 'customer' // Force customer role for registration
     });
 

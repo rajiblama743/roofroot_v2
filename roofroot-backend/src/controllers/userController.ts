@@ -32,7 +32,17 @@ export const validateCreateUser = [
     .optional()
     .trim()
     .isLength({ max: 1000 })
-    .withMessage('Agency description cannot exceed 1000 characters')
+    .withMessage('Agency description cannot exceed 1000 characters'),
+  body('license')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('License cannot exceed 200 characters'),
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Address cannot exceed 500 characters')
 ];
 
 // Validation rules for updating users
@@ -64,7 +74,17 @@ export const validateUpdateUser = [
     .optional()
     .trim()
     .isLength({ max: 1000 })
-    .withMessage('Agency description cannot exceed 1000 characters')
+    .withMessage('Agency description cannot exceed 1000 characters'),
+  body('license')
+    .optional()
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage('License cannot exceed 200 characters'),
+  body('address')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Address cannot exceed 500 characters')
 ];
 
 // Create user (admin only)
@@ -81,7 +101,7 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       return;
     }
 
-    const { name, email, password, role, phoneNumber, agencyName, agencyDescription }: CreateUserRequest = req.body;
+    const { name, email, password, role, phoneNumber, agencyName, agencyDescription, license, address }: CreateUserRequest = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -101,7 +121,9 @@ export const createUser = async (req: Request, res: Response): Promise<void> => 
       role,
       phoneNumber,
       agencyName,
-      agencyDescription
+      agencyDescription,
+      license,
+      address
     });
 
     await user.save();

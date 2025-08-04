@@ -14,7 +14,8 @@ import {
   Building2, 
   ArrowLeft,
   FileText,
-  CheckCircle
+  CheckCircle,
+  MapPin
 } from 'lucide-react';
 import { authUtils, validationUtils } from '@/lib/utils';
 import toast from 'react-hot-toast';
@@ -26,7 +27,8 @@ interface AgencyApplicationData {
   phoneNumber?: string;
   agencyName: string;
   agencyDescription: string;
-  licenseNumber?: string;
+  license: string;
+  address: string;
   website?: string;
   experience: string;
   reason: string;
@@ -349,18 +351,60 @@ export default function ApplyAgencyPage() {
                 )}
               </div>
 
-              {/* License Number Field */}
+              {/* Real Estate License Field */}
               <div className="mb-4">
-                <label htmlFor="licenseNumber" className="block text-sm font-medium text-gray-700">
-                  Real Estate License Number (Optional)
+                <label htmlFor="license" className="block text-sm font-medium text-gray-700">
+                  Real Estate License *
                 </label>
                 <input
-                  id="licenseNumber"
+                  id="license"
                   type="text"
-                  {...register('licenseNumber')}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter your license number if applicable"
+                  {...register('license', {
+                    required: 'Real estate license is required',
+                    maxLength: {
+                      value: 200,
+                      message: 'License must be less than 200 characters',
+                    },
+                  })}
+                  className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                    errors.license ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="Enter your real estate license number"
                 />
+                {errors.license && (
+                  <p className="mt-2 text-sm text-red-600">{errors.license.message}</p>
+                )}
+              </div>
+
+              {/* Agency Address Field */}
+              <div className="mb-4">
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                  Agency Address *
+                </label>
+                <div className="mt-1 relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MapPin className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    id="address"
+                    type="text"
+                    autoComplete="street-address"
+                    {...register('address', {
+                      required: 'Agency address is required',
+                      maxLength: {
+                        value: 500,
+                        message: 'Address must be less than 500 characters',
+                      },
+                    })}
+                    className={`appearance-none block w-full pl-10 pr-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
+                      errors.address ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    placeholder="Enter your agency address"
+                  />
+                </div>
+                {errors.address && (
+                  <p className="mt-2 text-sm text-red-600">{errors.address.message}</p>
+                )}
               </div>
 
               {/* Website Field */}

@@ -127,17 +127,21 @@ const FeaturedListings = () => {
 
             {/* Agency Info */}
             {listing.createdBy && (
-              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-                <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                  <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <Link 
-                    href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
-                    className="line-clamp-1 hover:text-blue-600 transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {listing.createdBy.agencyName || listing.createdBy.name}
-                  </Link>
-                </div>
+              <div className="flex items-center justify-center sm:justify-start pt-3 border-t border-gray-100 min-h-[2rem] sm:min-h-0">
+                <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-2 flex-shrink-0" />
+                <Link 
+                  href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                  className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors text-center sm:text-left flex items-center cursor-pointer z-10 relative"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (listing.createdBy) {
+                      window.location.href = `/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`;
+                    }
+                  }}
+                >
+                  {listing.createdBy.agencyName || listing.createdBy.name}
+                </Link>
               </div>
             )}
           </div>

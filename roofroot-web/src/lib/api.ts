@@ -142,6 +142,8 @@ export interface RegisterData {
   phoneNumber?: string;
   agencyName?: string;
   agencyDescription?: string;
+  license?: string;
+  address?: string;
 }
 
 export interface LoginData {
@@ -168,6 +170,8 @@ export interface Listing {
     agencyName?: string;
     phoneNumber?: string;
     agencyDescription?: string;
+    license?: string;
+    address?: string;
   };
   agency?: {
     _id: string;

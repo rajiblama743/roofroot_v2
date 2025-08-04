@@ -12,6 +12,8 @@ export interface IUser extends Document {
   phoneNumber?: string;
   agencyName?: string;
   agencyDescription?: string;
+  license?: string;
+  address?: string;
   role: UserRole;
   createdAt: Date;
   updatedAt: Date;
@@ -53,6 +55,16 @@ const userSchema = new Schema<IUser>({
     type: String,
     trim: true,
     maxlength: [1000, 'Agency description cannot be more than 1000 characters']
+  },
+  license: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'License cannot be more than 200 characters']
+  },
+  address: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Address cannot be more than 500 characters']
   },
   role: {
     type: String,

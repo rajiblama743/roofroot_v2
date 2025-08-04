@@ -14,6 +14,8 @@ export interface RegisterRequest {
   phoneNumber?: string;
   agencyName?: string;
   agencyDescription?: string;
+  license?: string;
+  address?: string;
 }
 
 // Login request type
@@ -34,6 +36,8 @@ export interface UpdateUserRequest {
   phoneNumber?: string;
   agencyName?: string;
   agencyDescription?: string;
+  license?: string;
+  address?: string;
   role?: UserRole;
 }
 
