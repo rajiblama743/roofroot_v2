@@ -134,11 +134,11 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
           </div>
 
           {listing.createdBy && (
-            <div className="flex items-center pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-center sm:justify-start pt-3 border-t border-gray-100 min-h-[2rem] sm:min-h-0">
               <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-2 flex-shrink-0" />
               <Link 
                 href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
-                className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors flex-1 min-w-0"
+                className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors text-center sm:text-left flex items-center"
                 onClick={(e) => e.stopPropagation()}
               >
                 {listing.createdBy.agencyName || listing.createdBy.name}
