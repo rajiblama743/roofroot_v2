@@ -204,7 +204,7 @@ export default function DashboardListingDetailPage() {
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-6">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{listing.title}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center sm:text-left">{listing.title}</h1>
                 
                 {/* Edit/Delete buttons for owners */}
                 {isOwner && (

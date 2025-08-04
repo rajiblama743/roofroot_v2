@@ -116,7 +116,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <div>
+            <div className="text-center sm:text-left">
               <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Agency Dashboard</h1>
               <p className="text-sm sm:text-base text-gray-600">
                 Manage your property listings and track your performance

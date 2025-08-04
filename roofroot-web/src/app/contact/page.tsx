@@ -89,7 +89,7 @@ export default function ContactPage() {
 
           {/* Contact Form */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">Send us a Message</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center sm:text-left">Send us a Message</h2>
             
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>

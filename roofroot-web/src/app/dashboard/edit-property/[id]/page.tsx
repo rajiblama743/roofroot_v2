@@ -223,7 +223,7 @@ export default function EditPropertyPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <Link
               href={`/dashboard/listings/${params.id}`}
               className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
@@ -231,7 +231,7 @@ export default function EditPropertyPage() {
               <ArrowLeft className="w-5 h-5 mr-2" />
               Back to Listing
             </Link>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Property</h1>
+            <h1 className="text-3xl font-bold text-gray-900 text-center sm:text-left">Edit Property</h1>
           </div>
         </div>
 

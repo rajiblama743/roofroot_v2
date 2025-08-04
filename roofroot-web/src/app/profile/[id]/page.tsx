@@ -236,16 +236,16 @@ export default function ProfilePage() {
 
         {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-md p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center text-center sm:text-left">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mx-auto sm:mx-0">
                 <span className="text-white text-2xl font-bold">
                   {user.name.charAt(0).toUpperCase()}
                 </span>
               </div>
-              <div className="ml-6">
+              <div className="sm:ml-6 mt-4 sm:mt-0">
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h1>
-                <div className="flex items-center">
+                <div className="flex items-center justify-center sm:justify-start">
                   <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
                     user.role === 'admin' 
                       ? 'bg-red-100 text-red-800'

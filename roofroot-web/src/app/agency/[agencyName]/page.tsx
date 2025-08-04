@@ -137,8 +137,8 @@ export default function AgencyListingsPage() {
           
           {/* Agency Info */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
                 <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
               </div>
               <div className="flex-1 min-w-0">

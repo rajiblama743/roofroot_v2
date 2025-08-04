@@ -101,7 +101,7 @@ export default function AddPropertyPage() {
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
               Back to Dashboard
             </Link>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Add New Property</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center sm:text-left">Add New Property</h1>
           </div>
         </div>
 
