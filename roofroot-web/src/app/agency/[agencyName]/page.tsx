@@ -155,7 +155,7 @@ export default function AgencyListingsPage() {
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           {/* Breadcrumbs */}
-          <div className="mb-3 sm:mb-4">
+          <div className="mb-3 sm:mb-4 px-2 sm:px-1">
             <Breadcrumbs
               items={[
                 { name: 'Home', href: '/' },
