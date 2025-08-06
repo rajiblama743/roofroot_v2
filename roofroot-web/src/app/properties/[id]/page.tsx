@@ -7,6 +7,7 @@ import { apiClient, Listing } from '@/lib/api';
 import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -18,11 +19,33 @@ export default function PropertyDetailPage() {
 
   const user = authUtils.getUser();
   const [isFromDashboard, setIsFromDashboard] = useState(false);
+  const [isFromAgency, setIsFromAgency] = useState(false);
+  const [agencyName, setAgencyName] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user came from dashboard
     const currentUser = authUtils.getUser();
     setIsFromDashboard(currentUser?.role === 'agency');
+    
+    // Check if we came from an agency page
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer;
+      const urlParams = new URLSearchParams(window.location.search);
+      const fromAgency = urlParams.get('fromAgency');
+      const agency = urlParams.get('agency');
+      
+      if (fromAgency === 'true' && agency) {
+        setIsFromAgency(true);
+        setAgencyName(decodeURIComponent(agency));
+      } else if (referrer.includes('/agency/')) {
+        setIsFromAgency(true);
+        // Extract agency name from referrer URL
+        const agencyMatch = referrer.match(/\/agency\/([^\/\?]+)/);
+        if (agencyMatch) {
+          setAgencyName(decodeURIComponent(agencyMatch[1]));
+        }
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -128,16 +151,26 @@ export default function PropertyDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
+        {/* Breadcrumbs */}
         <div className="mb-6">
-          <Link
-            href={isFromDashboard ? "/dashboard" : "/properties"}
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to {isFromDashboard ? "Dashboard" : "Properties"}
-          </Link>
+          <Breadcrumbs
+            items={
+              isFromAgency && agencyName
+                ? [
+                    { name: 'Home', href: '/' },
+                    { name: agencyName, href: `/agency/${encodeURIComponent(agencyName)}` },
+                    { name: listing?.title || 'Property Details' }
+                  ]
+                : [
+                    { name: 'Home', href: '/' },
+                    { name: 'Listings', href: '/properties' },
+                    { name: listing?.title || 'Property Details' }
+                  ]
+            }
+          />
         </div>
+
+
 
         {/* Property Images */}
         <div className="mb-8">

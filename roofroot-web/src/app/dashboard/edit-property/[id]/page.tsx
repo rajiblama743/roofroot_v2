@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, Save, X } from 'lucide-react';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 interface ListingData {
   _id: string;
@@ -202,6 +203,17 @@ export default function EditPropertyPage() {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumbs */}
+          <div className="mb-6">
+            <Breadcrumbs
+              items={[
+                { name: 'Dashboard', href: '/dashboard' },
+                { name: 'My Listings', href: '/dashboard' },
+                { name: 'Error' }
+              ]}
+            />
+          </div>
+          
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
             <p className="text-gray-600 mb-6">{error || 'The listing you are looking for does not exist.'}</p>
@@ -221,16 +233,21 @@ export default function EditPropertyPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Breadcrumbs */}
+        <div className="mb-6">
+          <Breadcrumbs
+            items={[
+              { name: 'Dashboard', href: '/dashboard' },
+              { name: 'My Listings', href: '/dashboard' },
+              { name: listing?.title || 'Listing Details', href: `/dashboard/listings/${params.id}` },
+              { name: 'Edit Property' }
+            ]}
+          />
+        </div>
+
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <Link
-              href={`/dashboard/listings/${params.id}`}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Listing
-            </Link>
             <h1 className="text-3xl font-bold text-gray-900 text-center sm:text-left">Edit Property</h1>
           </div>
         </div>

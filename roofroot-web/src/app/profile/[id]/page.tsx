@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api';
 import { formatDate, authUtils } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 interface User {
   _id: string;
@@ -210,6 +211,16 @@ export default function ProfilePage() {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Breadcrumbs */}
+          <div className="mb-6">
+            <Breadcrumbs
+              items={[
+                { name: 'Dashboard', href: '/dashboard' },
+                { name: 'Profile Not Found' }
+              ]}
+            />
+          </div>
+          
           <div className="text-center">
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Profile Not Found</h1>
             <p className="text-gray-600 mb-6">{error || 'The profile you are looking for does not exist.'}</p>
@@ -229,15 +240,14 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
+        {/* Breadcrumbs */}
         <div className="mb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-          >
-            <ArrowLeft className="w-5 h-5 mr-2" />
-            Back to Home
-          </Link>
+          <Breadcrumbs
+            items={[
+              { name: 'Dashboard', href: '/dashboard' },
+              { name: user?.name || 'User Profile' }
+            ]}
+          />
         </div>
 
         {/* Profile Header */}

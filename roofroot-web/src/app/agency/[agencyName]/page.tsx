@@ -8,6 +8,7 @@ import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils } fr
 import PropertyCard from '@/components/PropertyCard';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 interface AgencyInfo {
   name: string;
@@ -153,16 +154,18 @@ export default function AgencyListingsPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
-          {/* Back Button */}
+          {/* Breadcrumbs */}
           <div className="mb-3 sm:mb-4">
-            <Link
-              href={getBackButtonDestination()}
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
-            >
-              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
-              {getBackButtonDestination() === '/find-agency' ? 'Back to Find Agency' : 'Back to Properties'}
-            </Link>
+            <Breadcrumbs
+              items={[
+                { name: 'Home', href: '/' },
+                { name: 'Find Agency', href: '/find-agency' },
+                { name: displayName || 'Agency' }
+              ]}
+            />
           </div>
+
+
           
           {/* Agency Info */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
@@ -355,6 +358,7 @@ export default function AgencyListingsPage() {
                   key={listing.id} 
                   listing={listing} 
                   viewMode={viewMode}
+                  fromAgency={displayName}
                 />
               ))}
             </div>

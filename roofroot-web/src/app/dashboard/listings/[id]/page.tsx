@@ -20,6 +20,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
 import { handleListingError } from '@/lib/errorHandler';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 export default function DashboardListingDetailPage() {
   const params = useParams();
@@ -141,16 +142,19 @@ export default function DashboardListingDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-4 sm:py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Back Button */}
+        {/* Breadcrumbs */}
         <div className="mb-4 sm:mb-6">
-          <Link
-            href="/dashboard"
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base"
-          >
-            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-            Back to Dashboard
-          </Link>
+          <Breadcrumbs
+            items={[
+              { name: 'Home', href: '/' },
+              { name: 'Dashboard', href: '/dashboard' },
+              { name: 'My Listings', href: '/dashboard' },
+              { name: listing?.title || 'Listing Details' }
+            ]}
+          />
         </div>
+
+
 
         {/* Property Images */}
         <div className="mb-6 sm:mb-8">

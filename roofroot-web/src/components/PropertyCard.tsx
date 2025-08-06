@@ -8,12 +8,19 @@ import { formatPrice, formatDate, imageUtils } from '@/lib/utils';
 interface PropertyCardProps {
   listing: Listing;
   viewMode: 'grid' | 'list';
+  fromAgency?: string;
 }
 
-export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
+export default function PropertyCard({ listing, viewMode, fromAgency }: PropertyCardProps) {
   if (viewMode === 'list') {
     return (
-      <Link href={`/properties/${listing.id}`} className="block">
+      <Link 
+        href={fromAgency 
+          ? `/properties/${listing.id}?fromAgency=true&agency=${encodeURIComponent(fromAgency)}`
+          : `/properties/${listing.id}`
+        } 
+        className="block"
+      >
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
           <div className="flex flex-col sm:flex-row">
             <div className="w-full sm:w-48 h-32 sm:h-32 flex-shrink-0">
@@ -89,7 +96,13 @@ export default function PropertyCard({ listing, viewMode }: PropertyCardProps) {
   }
 
   return (
-    <Link href={`/properties/${listing.id}`} className="block">
+    <Link 
+      href={fromAgency 
+        ? `/properties/${listing.id}?fromAgency=true&agency=${encodeURIComponent(fromAgency)}`
+        : `/properties/${listing.id}`
+      } 
+      className="block"
+    >
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         {/* Property Image */}
         <div className="relative h-32 sm:h-40 lg:h-48 overflow-hidden">
