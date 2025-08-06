@@ -120,6 +120,11 @@ a {
   display: none;  /* Safari and Chrome */
 }
 
+/* Breadcrumb arrow positioning */
+.breadcrumb-arrow {
+  transform: translateY(1px);
+}
+
 
 
 /* Smooth transitions */
