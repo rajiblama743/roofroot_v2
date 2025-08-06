@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Search, Building2, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 import { apiClient, Agency, AgencySearchFilters } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
+import { formatDate, slugUtils } from '@/lib/utils';
 import toast from 'react-hot-toast';
 
 function FindAgencyContent() {
@@ -77,7 +77,7 @@ function FindAgencyContent() {
   };
 
   const handleAgencyClick = (agencyName: string) => {
-    router.push(`/agency/${encodeURIComponent(agencyName)}?from=find-agency`);
+    router.push(`/agency/${slugUtils.generateSlug(agencyName)}?from=find-agency`);
   };
 
   if (loading && agencies.length === 0) {

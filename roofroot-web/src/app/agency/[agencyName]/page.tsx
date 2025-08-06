@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Building2, Calendar, MapPin, DollarSign, Mail, Phone, MapPin as MapPinIcon } from 'lucide-react';
+import { ArrowLeft, Building2, Calendar, MapPin, DollarSign, Mail, Phone, MapPin as MapPinIcon, Share } from 'lucide-react';
 import { apiClient, Listing, ListingFilters } from '@/lib/api';
-import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils } from '@/lib/utils';
+import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils, slugUtils } from '@/lib/utils';
 import PropertyCard from '@/components/PropertyCard';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
@@ -33,6 +33,7 @@ export default function AgencyListingsPage() {
     limit: 12,
     totalPages: 0,
   });
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Determine back button destination based on referrer
   const getBackButtonDestination = () => {
@@ -59,7 +60,10 @@ export default function AgencyListingsPage() {
     return '/properties';
   };
 
-  const agencyName = decodeURIComponent(params.agencyName as string);
+
+
+  const agencySlug = params.agencyName as string;
+  const agencyName = slugUtils.slugToText(agencySlug);
 
   useEffect(() => {
     fetchAgencyListings();
@@ -101,6 +105,26 @@ export default function AgencyListingsPage() {
 
   const handlePageChange = (page: number) => {
     fetchAgencyListings(page);
+  };
+
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  const handleCopyUrl = async () => {
+    try {
+      // Create clean URL with slug (without query parameters)
+      const cleanUrl = `${window.location.origin}/agency/${agencySlug}`;
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(cleanUrl);
+      
+      toast.success('Clean agency URL copied to clipboard!');
+      setShowShareModal(false);
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      toast.error('Failed to copy URL to clipboard');
+    }
   };
 
   if (loading && listings.length === 0) {
@@ -165,8 +189,6 @@ export default function AgencyListingsPage() {
             />
           </div>
 
-
-          
           {/* Agency Info */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-4 sm:mb-6">
             {/* Desktop Layout */}
@@ -191,41 +213,50 @@ export default function AgencyListingsPage() {
               </div>
               
               {/* Right side - Contact Information */}
-              {(agencyInfo?.email || agencyInfo?.phoneNumber || agencyInfo?.address) && (
-                <div className="w-64 border-l border-gray-200 pl-6">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
-                  <div className="space-y-3">
-                    {agencyInfo.email && (
-                      <div className="flex items-start text-sm text-gray-600">
-                        <Mail className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                        <a 
-                          href={`mailto:${agencyInfo.email}`} 
-                          className="hover:text-blue-600 transition-colors line-clamp-2"
-                        >
-                          {agencyInfo.email}
-                        </a>
-                      </div>
-                    )}
-                    {agencyInfo.phoneNumber && (
-                      <div className="flex items-start text-sm text-gray-600">
-                        <Phone className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                        <a 
-                          href={`tel:${agencyInfo.phoneNumber}`} 
-                          className="hover:text-blue-600 transition-colors line-clamp-2"
-                        >
-                          {agencyInfo.phoneNumber}
-                        </a>
-                      </div>
-                    )}
-                    {agencyInfo.address && (
-                      <div className="flex items-start text-sm text-gray-600">
-                        <MapPinIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="line-clamp-2">{agencyInfo.address}</span>
-                      </div>
-                    )}
+              <div className="w-64 border-l border-gray-200 pl-6">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
+                <div className="space-y-3">
+                  {agencyInfo?.email && (
+                    <div className="flex items-start text-sm text-gray-600">
+                      <Mail className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      <a 
+                        href={`mailto:${agencyInfo.email}`} 
+                        className="hover:text-blue-600 transition-colors line-clamp-2"
+                      >
+                        {agencyInfo.email}
+                      </a>
+                    </div>
+                  )}
+                  {agencyInfo?.phoneNumber && (
+                    <div className="flex items-start text-sm text-gray-600">
+                      <Phone className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      <a 
+                        href={`tel:${agencyInfo.phoneNumber}`} 
+                        className="hover:text-blue-600 transition-colors line-clamp-2"
+                      >
+                        {agencyInfo.phoneNumber}
+                      </a>
+                    </div>
+                  )}
+                  {agencyInfo?.address && (
+                    <div className="flex items-start text-sm text-gray-600">
+                      <MapPinIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      <span className="line-clamp-2">{agencyInfo.address}</span>
+                    </div>
+                  )}
+                  
+                  {/* Share Button */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      <Share className="w-4 h-4 mr-2 flex-shrink-0" />
+                      Share
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Mobile Layout */}
@@ -250,41 +281,50 @@ export default function AgencyListingsPage() {
               </div>
               
               {/* Contact Information */}
-              {(agencyInfo?.email || agencyInfo?.phoneNumber || agencyInfo?.address) && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
-                  <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
-                  <div className="space-y-3">
-                    {agencyInfo.email && (
-                      <div className="flex items-start text-sm text-gray-600">
-                        <Mail className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                        <a 
-                          href={`mailto:${agencyInfo.email}`} 
-                          className="hover:text-blue-600 transition-colors line-clamp-2"
-                        >
-                          {agencyInfo.email}
-                        </a>
-                      </div>
-                    )}
-                    {agencyInfo.phoneNumber && (
-                      <div className="flex items-start text-sm text-gray-600">
-                        <Phone className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                        <a 
-                          href={`tel:${agencyInfo.phoneNumber}`} 
-                          className="hover:text-blue-600 transition-colors line-clamp-2"
-                        >
-                          {agencyInfo.phoneNumber}
-                        </a>
-                      </div>
-                    )}
-                    {agencyInfo.address && (
-                      <div className="flex items-start text-sm text-gray-600">
-                        <MapPinIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
-                        <span className="line-clamp-2">{agencyInfo.address}</span>
-                      </div>
-                    )}
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <h3 className="text-sm font-semibold text-gray-900 mb-3">Contact Information</h3>
+                <div className="space-y-3">
+                  {agencyInfo?.email && (
+                    <div className="flex items-start text-sm text-gray-600">
+                      <Mail className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      <a 
+                        href={`mailto:${agencyInfo.email}`} 
+                        className="hover:text-blue-600 transition-colors line-clamp-2"
+                      >
+                        {agencyInfo.email}
+                      </a>
+                    </div>
+                  )}
+                  {agencyInfo?.phoneNumber && (
+                    <div className="flex items-start text-sm text-gray-600">
+                      <Phone className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      <a 
+                        href={`tel:${agencyInfo.phoneNumber}`} 
+                        className="hover:text-blue-600 transition-colors line-clamp-2"
+                      >
+                        {agencyInfo.phoneNumber}
+                      </a>
+                    </div>
+                  )}
+                  {agencyInfo?.address && (
+                    <div className="flex items-start text-sm text-gray-600">
+                      <MapPinIcon className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
+                      <span className="line-clamp-2">{agencyInfo.address}</span>
+                    </div>
+                  )}
+                  
+                  {/* Share Button */}
+                  <div className="pt-3 border-t border-gray-100">
+                    <button
+                      onClick={handleShare}
+                      className="flex items-center justify-center sm:justify-start text-sm text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      <Share className="w-4 h-4 mr-2 flex-shrink-0" />
+                      Share
+                    </button>
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -407,6 +447,57 @@ export default function AgencyListingsPage() {
               </div>
             )}
           </>
+        )}
+
+        {/* Share URL Modal */}
+        {showShareModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center">
+                  <Share className="h-6 w-6 text-blue-600 mr-3" />
+                  <h3 className="text-lg font-medium text-gray-900">Share Agency URL</h3>
+                </div>
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              <div className="mb-6">
+                <p className="text-sm text-gray-600 mb-3">
+                  Share this clean URL for the agency:
+                </p>
+                <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                  <p className="text-sm font-mono text-gray-800 break-all">
+                    {`${window.location.origin}/agency/${agencySlug}`}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row justify-end gap-3">
+                <button
+                  onClick={() => setShowShareModal(false)}
+                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCopyUrl}
+                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                  </svg>
+                  Copy URL
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

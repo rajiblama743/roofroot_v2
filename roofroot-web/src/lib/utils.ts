@@ -106,6 +106,27 @@ export const validationUtils = {
   },
 };
 
+// Slug generation utilities
+export const slugUtils = {
+  // Convert text to URL-friendly slug
+  generateSlug: (text: string): string => {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  },
+
+  // Convert slug back to readable text
+  slugToText: (slug: string): string => {
+    return slug
+      .replace(/-/g, ' ') // Replace hyphens with spaces
+      .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize first letter of each word
+  },
+};
+
 // Image utilities
 export const imageUtils = {
   getPlaceholderImage: (width: number, height: number): string => {

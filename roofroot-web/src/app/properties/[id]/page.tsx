@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, MapPin, DollarSign, Calendar, Building2, Bed, Bath, Square, Edit, Trash2, Car, Home } from 'lucide-react';
 import { apiClient, Listing } from '@/lib/api';
-import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
+import { authUtils, formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -158,7 +158,7 @@ export default function PropertyDetailPage() {
               isFromAgency && agencyName
                 ? [
                     { name: 'Home', href: '/' },
-                    { name: agencyName, href: `/agency/${encodeURIComponent(agencyName)}` },
+                    { name: agencyName, href: `/agency/${slugUtils.generateSlug(agencyName)}` },
                     { name: listing?.title || 'Property Details' }
                   ]
                 : [
@@ -348,7 +348,7 @@ export default function PropertyDetailPage() {
                     </div>
                     <div className="ml-3">
                       <Link 
-                        href={`/agency/${encodeURIComponent(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                        href={`/agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
                         className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                       >
                         {listing.createdBy.agencyName || listing.createdBy.name}
