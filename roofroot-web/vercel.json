@@ -26,5 +26,9 @@
       "source": "/api/(.*)",
       "destination": "https://roofroot-v2.onrender.com/api/$1"
     }
+  ],
+  "domains": [
+    "roofchains.com",
+    "www.roofchains.com"
   ]
 }
