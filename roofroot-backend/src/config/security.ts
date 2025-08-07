@@ -63,15 +63,26 @@ export const securityConfig = {
         ...frontendUrls,
         // Common deployment domains
         'https://roofroot-web.vercel.app',
+        'https://roofroot-v2.vercel.app',
         'https://roofroot-web.netlify.app',
         'https://roofroot-web.onrender.com',
         'https://roofroot-web.railway.app',
+        // Vercel preview deployments
+        'https://roofroot-v2.vercel.app',
+        'https://roofroot-web-git-main-rajiblama.vercel.app',
+        'https://roofroot-web-rajiblama.vercel.app',
         // Wildcard for development (remove in production)
         ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
       ].filter(Boolean); // Remove undefined values
       
       console.log(`🌐 CORS: Request from origin: ${origin}`);
       console.log(`🌐 CORS: Allowed origins:`, allowedOrigins);
+      
+      // More permissive CORS for production - allow any Vercel domain
+      if (origin.includes('vercel.app') || origin.includes('vercel.com')) {
+        console.log('✅ CORS: Allowing Vercel domain');
+        return callback(null, true);
+      }
       
       if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
         console.log('✅ CORS: Origin allowed');

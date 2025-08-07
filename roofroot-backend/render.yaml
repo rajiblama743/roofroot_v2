@@ -3,7 +3,7 @@ services:
     name: roofroot-backend
     env: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build
+    buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -17,4 +17,6 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: JWT_REFRESH_SECRET
-        sync: false 
+        sync: false
+      - key: FRONTEND_URLS
+        value: "https://roofroot-web.vercel.app,https://roofroot-v2.vercel.app" 
