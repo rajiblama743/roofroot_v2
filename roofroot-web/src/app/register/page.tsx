@@ -42,7 +42,7 @@ export default function RegisterPage() {
         authUtils.setToken(response.token);
         authUtils.setUser(response.user);
         
-        toast.success('Registration successful! Welcome to RoofRoot!');
+        toast.success('Registration successful! Welcome to RoofChains!');
         router.push('/properties');
       } else {
         toast.error(response.message || 'Registration failed');
@@ -270,7 +270,7 @@ export default function RegisterPage() {
                 Are you a real estate agency?
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                Apply to become a verified agency and start listing properties on RoofRoot.
+                Apply to become a verified agency and start listing properties on RoofChains.
               </p>
               <Link
                 href="/apply-agency"

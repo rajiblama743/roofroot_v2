@@ -78,7 +78,7 @@ export default function ApplyAgencyPage() {
             Application Submitted!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Thank you for your interest in becoming a RoofRoot agency partner.
+            Thank you for your interest in becoming a RoofChains agency partner.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export default function ApplyAgencyPage() {
           Apply for Agency Status
         </h2>
         <p className="mt-2 text-center text-sm text-gray-600">
-          Join RoofRoot as a verified real estate agency partner
+          Join RoofChains as a verified real estate agency partner
         </p>
       </div>
 
@@ -449,13 +449,13 @@ export default function ApplyAgencyPage() {
               {/* Reason for Application Field */}
               <div>
                 <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
-                  Why do you want to join RoofRoot? *
+                  Why do you want to join RoofChains? *
                 </label>
                 <textarea
                   id="reason"
                   rows={3}
                   {...register('reason', {
-                    required: 'Please tell us why you want to join RoofRoot',
+                    required: 'Please tell us why you want to join RoofChains',
                     maxLength: {
                       value: 500,
                       message: 'Response must be less than 500 characters',
@@ -464,7 +464,7 @@ export default function ApplyAgencyPage() {
                   className={`appearance-none block w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm ${
                     errors.reason ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Tell us about your goals and how you plan to use RoofRoot"
+                  placeholder="Tell us about your goals and how you plan to use RoofChains"
                 />
                 {errors.reason && (
                   <p className="mt-2 text-sm text-red-600">{errors.reason.message}</p>

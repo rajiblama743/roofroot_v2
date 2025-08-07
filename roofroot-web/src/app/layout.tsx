@@ -7,10 +7,10 @@ import Header from '@/components/Header';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'RoofRoot - Your Premier Real Estate Platform',
-  description: 'Find your perfect property with RoofRoot. Browse verified listings, connect with trusted real estate agencies, and discover your dream home.',
-  keywords: 'real estate, property, homes for sale, apartments, real estate agency',
-  authors: [{ name: 'RoofRoot Team' }],
+  title: 'RoofChains - Your Premier Real Estate Platform',
+  description: 'Find your perfect property with RoofChains. Browse verified listings, connect with trusted real estate agencies, and discover your dream home.',
+  keywords: 'real estate, property listings, real estate agencies, property search',
+  authors: [{ name: 'RoofChains Team' }],
 };
 
 export const viewport: Viewport = {

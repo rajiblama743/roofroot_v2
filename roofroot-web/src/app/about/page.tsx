@@ -5,7 +5,7 @@ export default function AboutPage() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">RoofRoot</span>
+            About <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">RoofChains</span>
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We're revolutionizing the real estate industry by connecting verified agencies with 
@@ -213,7 +213,7 @@ export default function AboutPage() {
           <h2 className="text-3xl font-bold text-gray-900 mb-4">Join Our Community</h2>
           <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
             Whether you're looking for your dream home or want to showcase your properties, 
-            RoofRoot is here to help. Join thousands of satisfied users who have found 
+            RoofChains is here to help. Join thousands of satisfied users who have found 
             their perfect match through our platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

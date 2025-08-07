@@ -74,7 +74,7 @@ export default function AgenciesPage() {
             Verified Agencies
           </h1>
           <p className="text-gray-600">
-            Connect with trusted real estate agencies on RoofRoot
+            Connect with trusted real estate agencies on RoofChains
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function AgenciesPage() {
         {/* Apply for Agency CTA */}
         <div className="mt-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-8 text-center text-white">
           <h2 className="text-2xl font-bold mb-4">
-            Want to become a RoofRoot Agency?
+            Want to become a RoofChains Agency?
           </h2>
           <p className="text-blue-100 mb-6">
             Join our network of verified real estate agencies and start listing properties today.

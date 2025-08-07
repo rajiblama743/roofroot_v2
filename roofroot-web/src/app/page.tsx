@@ -159,7 +159,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">
-              Why Choose RoofRoot?
+              Why Choose RoofChains?
             </h2>
             <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
               We make finding your perfect property simple, secure, and enjoyable
@@ -207,7 +207,7 @@ export default function HomePage() {
             Ready to Find Your Dream Home?
           </h2>
           <p className="text-lg sm:text-xl mb-6 sm:mb-8 text-blue-100">
-            Join thousands of satisfied customers who found their perfect property with RoofRoot
+            Join thousands of satisfied customers who found their perfect property with RoofChains
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

@@ -56,7 +56,7 @@ export default function ContactPage() {
                 <Mail className="w-5 h-5 text-blue-600 mr-3" />
                 <div>
                   <p className="font-medium text-gray-900">Email</p>
-                  <p className="text-gray-600">support@roofroot.com</p>
+                  <p className="text-gray-600">support@roofchains.com</p>
                 </div>
               </div>
               

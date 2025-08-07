@@ -12,10 +12,11 @@ import {
   Grid3X3,
   List,
   Edit,
-  Trash2
+  Trash2,
+  Share
 } from 'lucide-react';
 import { apiClient, Listing } from '@/lib/api';
-import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
+import { authUtils, formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
 import { handleListingError } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -29,6 +30,8 @@ export default function DashboardPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [agencyName, setAgencyName] = useState<string>('');
   const router = useRouter();
 
   useEffect(() => {
@@ -38,6 +41,9 @@ export default function DashboardPage() {
       router.push('/login');
       return;
     }
+
+    // Set agency name for sharing
+    setAgencyName(user.agencyName || user.name || '');
 
     fetchListings();
   }, []);
@@ -57,6 +63,27 @@ export default function DashboardPage() {
       setError('Failed to load listings');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleShare = () => {
+    setShowShareModal(true);
+  };
+
+  const handleCopyUrl = async () => {
+    try {
+      // Create clean URL for the agency's public page with slug
+      const agencySlug = slugUtils.generateSlug(agencyName);
+      const cleanUrl = `${window.location.origin}/agency/${agencySlug}`;
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(cleanUrl);
+      
+      toast.success('Agency URL copied to clipboard!');
+      setShowShareModal(false);
+    } catch (error) {
+      console.error('Failed to copy URL:', error);
+      toast.error('Failed to copy URL to clipboard');
     }
   };
 
@@ -122,13 +149,22 @@ export default function DashboardPage() {
                 Manage your property listings and track your performance
               </p>
             </div>
-            <button
-              onClick={() => router.push('/dashboard/add-property')}
-              className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add Property
-            </button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={handleShare}
+                className="w-full sm:w-auto bg-gray-600 text-white px-4 py-3 sm:py-2 rounded-lg font-semibold hover:bg-gray-700 transition-colors flex items-center justify-center"
+              >
+                <Share className="w-5 h-5 mr-2" />
+                Share
+              </button>
+              <button
+                onClick={() => router.push('/dashboard/add-property')}
+                className="w-full sm:w-auto bg-blue-600 text-white px-4 py-3 sm:py-2 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center justify-center"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Add Property
+              </button>
+            </div>
           </div>
         </div>
 
@@ -345,6 +381,57 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Share URL Modal */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-md w-full mx-4 shadow-2xl border border-gray-200">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center">
+                <Share className="h-6 w-6 text-blue-600 mr-3" />
+                <h3 className="text-lg font-medium text-gray-900">Share Agency URL</h3>
+              </div>
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 mb-3">
+                Share this clean URL for your agency:
+              </p>
+              <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                <p className="text-sm font-mono text-gray-800 break-all">
+                  {`${window.location.origin}/agency/${slugUtils.generateSlug(agencyName)}`}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row justify-end gap-3">
+              <button
+                onClick={() => setShowShareModal(false)}
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCopyUrl}
+                className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center justify-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                </svg>
+                Copy URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 

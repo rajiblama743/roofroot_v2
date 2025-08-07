@@ -58,7 +58,7 @@ const Header = () => {
               <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <span className="ml-2 text-base sm:text-lg lg:text-xl font-bold text-gray-900">RoofRoot</span>
+              <span className="ml-2 text-base sm:text-lg lg:text-xl font-bold text-gray-900">RoofChains</span>
             </Link>
           </div>
 
