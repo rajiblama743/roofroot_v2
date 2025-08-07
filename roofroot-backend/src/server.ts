@@ -1,5 +1,17 @@
+import dotenv from 'dotenv';
 import app from './app';
 import connectDB from './config/database';
+
+// Load environment variables from .env file
+dotenv.config();
+
+// Import and validate JWT secrets after dotenv is loaded
+import { validateJWTSecrets } from './middlewares/authMiddleware';
+import { initializeSecurity } from './config/security';
+
+// Validate JWT secrets after environment variables are loaded
+validateJWTSecrets();
+initializeSecurity();
 
 // Get port from environment variable, with fallbacks
 const port = process.env.PORT || process.env.RENDER_PORT || 3001;

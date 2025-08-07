@@ -35,12 +35,59 @@ export class ErrorHandler {
       toast.error(message || 'Server error occurred');
     },
     onNetworkError: () => {
-      toast.error('Network error. Please check your connection.');
+      toast.error('Network error. Please check your connection and try again.');
     }
   };
 
+  // Check if user is offline
+  static isOffline(): boolean {
+    return !navigator.onLine;
+  }
+
+  // Get specific error message based on error type
+  static getErrorMessage(error: ApiError): string {
+    const status = error.response?.status;
+    const errorData = error.response?.data;
+
+    switch (status) {
+      case 400:
+        return errorData?.message || 'Invalid request. Please check your input.';
+      case 401:
+        return 'Your session has expired. Please log in again.';
+      case 403:
+        return 'You do not have permission to perform this action.';
+      case 404:
+        return 'The requested resource was not found.';
+      case 409:
+        return errorData?.message || 'This resource already exists.';
+      case 422:
+        return errorData?.message || 'Invalid data provided.';
+      case 429:
+        return 'Too many requests. Please wait a moment and try again.';
+      case 500:
+        return 'Server error. Please try again later.';
+      case 502:
+        return 'Server temporarily unavailable. Please try again.';
+      case 503:
+        return 'Service temporarily unavailable. Please try again.';
+      case 504:
+        return 'Request timeout. Please try again.';
+      default:
+        if (!error.response) {
+          return 'Network error. Please check your connection.';
+        }
+        return errorData?.message || 'An unexpected error occurred.';
+    }
+  }
+
   static handle(error: ApiError, options: ErrorHandlerOptions = {}): void {
     const mergedOptions = { ...this.defaultOptions, ...options };
+    
+    // Check if user is offline
+    if (this.isOffline()) {
+      toast.error('You are currently offline. Please check your internet connection.');
+      return;
+    }
     
     // Log detailed error information for debugging
     console.error('=== ERROR DEBUGGING ===');
@@ -49,10 +96,12 @@ export class ErrorHandler {
     console.error('Error response data:', error.response?.data);
     console.error('Error message:', error.message);
     console.error('Error stack:', error.stack);
+    console.error('Network status:', navigator.onLine ? 'Online' : 'Offline');
     console.error('========================');
 
     const status = error.response?.status;
     const errorData = error.response?.data;
+    const errorMessage = this.getErrorMessage(error);
 
     switch (status) {
       case 400:
@@ -62,45 +111,54 @@ export class ErrorHandler {
           console.error('Validation errors:', validationErrors);
           mergedOptions.onValidationError?.(validationErrors);
         } else {
-          mergedOptions.onServerError?.(errorData?.message || 'Validation failed');
+          toast.error(errorMessage);
         }
         break;
 
       case 401:
         // Authentication error
         console.error('Authentication error - user will be logged out');
-        toast.error('Authentication failed. Please log in again.');
+        toast.error(errorMessage);
         mergedOptions.onAuthError?.();
         break;
 
       case 403:
         // Authorization error
         console.error('Authorization error - access denied');
-        toast.error('Access denied. You do not have permission to perform this action.');
+        toast.error(errorMessage);
         break;
 
       case 404:
         // Not found
         console.error('Resource not found');
-        toast.error('The requested resource was not found.');
+        toast.error(errorMessage);
         break;
 
       case 409:
         // Conflict (e.g., duplicate email)
         console.error('Conflict error');
-        toast.error(errorData?.message || 'This resource already exists.');
+        toast.error(errorMessage);
         break;
 
       case 422:
         // Unprocessable entity
         console.error('Unprocessable entity error');
-        toast.error(errorData?.message || 'Invalid data provided.');
+        toast.error(errorMessage);
+        break;
+
+      case 429:
+        // Rate limit
+        console.error('Rate limit exceeded');
+        toast.error(errorMessage);
         break;
 
       case 500:
-        // Server error
+      case 502:
+      case 503:
+      case 504:
+        // Server errors
         console.error('Server error');
-        mergedOptions.onServerError?.(errorData?.message || 'Internal server error');
+        toast.error(errorMessage);
         break;
 
       default:
@@ -111,7 +169,7 @@ export class ErrorHandler {
         } else {
           // Other errors
           console.error('Unknown error');
-          mergedOptions.onServerError?.(errorData?.message || 'An unexpected error occurred');
+          toast.error(errorMessage);
         }
         break;
     }

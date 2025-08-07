@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
 import User, { IUser } from '../models/User';
 import { RegisterRequest, LoginRequest, AuthResponse, JWTPayload, AuthenticatedRequest } from '../types/user';
-import { generateToken } from '../middlewares/authMiddleware';
+import { generateAccessToken } from '../middlewares/authMiddleware';
 
 // Validation rules for registration
 export const validateRegistration = [
@@ -106,7 +106,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       role: user.role
     };
 
-    const token = generateToken(payload);
+    const token = generateAccessToken(payload);
 
     // Return user data without password
     const userResponse = user.toObject();
@@ -170,7 +170,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: user.role
     };
 
-    const token = generateToken(payload);
+    const token = generateAccessToken(payload);
 
     // Return user data without password
     const userResponse = user.toObject();

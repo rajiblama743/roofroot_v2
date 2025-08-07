@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Wifi, WifiOff, AlertCircle } from 'lucide-react';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { apiClient } from '@/lib/api';
+import { handleListingError } from '@/lib/errorHandler';
 
 interface ListingData {
   _id: string;
@@ -33,6 +35,8 @@ export default function EditPropertyPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [listing, setListing] = useState<ListingData | null>(null);
+  const [isOnline, setIsOnline] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -67,27 +71,20 @@ export default function EditPropertyPage() {
   const fetchListing = async () => {
     try {
       setLoading(true);
-      const token = getToken();
+      setError(null);
       
-      if (!token) {
+      const user = getUser();
+      if (!user || user.role !== 'agency') {
         router.push('/login');
         return;
       }
 
-      const response = await fetch(`http://localhost:3001/api/listings/${params.id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await apiClient.getListing(params.id as string);
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (data.success) {
         const listingData = data.listing;
         
         // Check if user owns this listing
-        const user = getUser();
         if (listingData.createdBy && listingData.createdBy._id !== user?._id) {
           toast.error('You can only edit your own listings');
           router.push('/dashboard');
@@ -110,9 +107,10 @@ export default function EditPropertyPage() {
       } else {
         setError('Listing not found');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching listing:', error);
-      setError('Failed to load listing');
+      handleListingError(error);
+      setError('Failed to load listing. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -127,6 +125,29 @@ export default function EditPropertyPage() {
 
     fetchListing();
   }, [params.id, router]);
+
+  // Monitor network status
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      if (error && retryCount < 3) {
+        setRetryCount(prev => prev + 1);
+        fetchListing();
+      }
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [error, retryCount]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -146,7 +167,6 @@ export default function EditPropertyPage() {
     setSubmitting(true);
     
     try {
-      const token = getToken();
       // Process images field - split by newlines and filter empty lines
       let imagesArray: string[] = [];
       if (images.trim()) {
@@ -170,26 +190,17 @@ export default function EditPropertyPage() {
         images: imagesArray.length > 0 ? imagesArray : undefined
       };
 
-      const response = await fetch(`http://localhost:3001/api/listings/${params.id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
+      const data = await apiClient.updateListing(params.id as string, formData);
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
+      if (data.success) {
         toast.success('Listing updated successfully');
         router.push(`/dashboard/listings/${params.id}`);
       } else {
         toast.error(data.message || 'Failed to update listing');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating listing:', error);
-      toast.error('Failed to update listing');
+      handleListingError(error);
     } finally {
       setSubmitting(false);
     }
@@ -228,15 +239,34 @@ export default function EditPropertyPage() {
           </div>
           
           <div className="text-center">
+            <div className="flex justify-center mb-4">
+              <AlertCircle className="w-12 h-12 text-red-500" />
+            </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Error</h1>
             <p className="text-gray-600 mb-6">{error || 'The listing you are looking for does not exist.'}</p>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to Dashboard
-            </Link>
+            
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                onClick={() => {
+                  setError(null);
+                  setRetryCount(0);
+                  fetchListing();
+                }}
+                disabled={!isOnline}
+                className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Wifi className="w-5 h-5 mr-2" />
+                {!isOnline ? 'Waiting for connection...' : 'Try Again'}
+              </button>
+              
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Back to Dashboard
+              </Link>
+            </div>
           </div>
         </div>
       </div>
@@ -262,6 +292,22 @@ export default function EditPropertyPage() {
         <div className="mb-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h1 className="text-3xl font-bold text-gray-900 text-center sm:text-left">Edit Property</h1>
+            
+            {/* Network Status Indicator */}
+            <div className="flex items-center gap-2">
+              {!isOnline && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm">
+                  <WifiOff className="w-4 h-4" />
+                  <span>Offline</span>
+                </div>
+              )}
+              {isOnline && retryCount > 0 && (
+                <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                  <Wifi className="w-4 h-4" />
+                  <span>Back Online</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
