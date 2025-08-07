@@ -44,6 +44,7 @@ export default function EditPropertyPage() {
   const [bathrooms, setBathrooms] = useState('');
   const [carBay, setCarBay] = useState('');
   const [area, setArea] = useState('');
+  const [images, setImages] = useState('');
 
   // Get user from localStorage
   const getUser = () => {
@@ -105,6 +106,7 @@ export default function EditPropertyPage() {
         setBathrooms(listingData.bathrooms?.toString() || '');
         setCarBay(listingData.carBay?.toString() || '');
         setArea(listingData.area?.toString() || '');
+        setImages(listingData.images?.join('\n') || '');
       } else {
         setError('Listing not found');
       }
@@ -145,6 +147,16 @@ export default function EditPropertyPage() {
     
     try {
       const token = getToken();
+      // Process images field - split by newlines and filter empty lines
+      let imagesArray: string[] = [];
+      if (images.trim()) {
+        imagesArray = images
+          .split('\n')
+          .map(url => url.trim())
+          .filter(url => url.length > 0)
+          .slice(0, 10); // Limit to 10 images
+      }
+
       const formData = {
         title: title.trim(),
         description: description.trim(),
@@ -154,7 +166,8 @@ export default function EditPropertyPage() {
         bedrooms: bedrooms ? parseInt(bedrooms) : undefined,
         bathrooms: bathrooms ? parseInt(bathrooms) : undefined,
         carBay: carBay ? parseInt(carBay) : undefined,
-        area: area ? parseFloat(area) : undefined
+        area: area ? parseFloat(area) : undefined,
+        images: imagesArray.length > 0 ? imagesArray : undefined
       };
 
       const response = await fetch(`http://localhost:3001/api/listings/${params.id}`, {
@@ -406,6 +419,25 @@ export default function EditPropertyPage() {
                   min="0"
                 />
               </div>
+            </div>
+
+            {/* Images */}
+            <div>
+              <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
+                Image URLs (Optional)
+              </label>
+              <textarea
+                id="images"
+                name="images"
+                value={images}
+                onChange={(e) => setImages(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter image URLs, one per line (max 10 images)"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Enter image URLs, one per line. Maximum 10 images allowed.
+              </p>
             </div>
 
             {/* Action Buttons */}

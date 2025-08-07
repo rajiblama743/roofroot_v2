@@ -20,7 +20,7 @@ interface CreateListingForm {
   bathrooms?: number;
   carBay?: number;
   area?: number;
-  images?: string[];
+  images?: string;
 }
 
 export default function AddPropertyPage() {
@@ -43,7 +43,7 @@ export default function AddPropertyPage() {
       bathrooms: 0,
       carBay: 0,
       area: 0,
-      images: []
+      images: ''
     }
   });
 
@@ -62,6 +62,16 @@ export default function AddPropertyPage() {
     setSubmitting(true);
     
     try {
+      // Process images field - split by newlines and filter empty lines
+      let images: string[] = [];
+      if (data.images) {
+        images = data.images
+          .split('\n')
+          .map(url => url.trim())
+          .filter(url => url.length > 0)
+          .slice(0, 10); // Limit to 10 images
+      }
+
       // Transform the data to ensure proper types
       const transformedData = {
         ...data,
@@ -70,6 +80,7 @@ export default function AddPropertyPage() {
         bathrooms: data.bathrooms ? Number(data.bathrooms) : undefined,
         carBay: data.carBay ? Number(data.carBay) : undefined,
         area: data.area ? Number(data.area) : undefined,
+        images: images.length > 0 ? images : undefined,
       };
       
       const response = await apiClient.createListing(transformedData);
@@ -259,6 +270,22 @@ export default function AddPropertyPage() {
               {errors.area && (
                 <p className="mt-1 text-sm text-red-600">{errors.area.message}</p>
               )}
+            </div>
+
+            {/* Images */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Image URLs (Optional)
+              </label>
+              <textarea
+                {...register('images')}
+                rows={3}
+                className="w-full px-3 py-2 text-sm sm:text-base border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter image URLs, one per line (max 10 images)"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                Enter image URLs, one per line. Maximum 10 images allowed.
+              </p>
             </div>
 
             {/* Action Buttons */}
