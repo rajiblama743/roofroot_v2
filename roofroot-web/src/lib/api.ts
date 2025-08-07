@@ -1,7 +1,15 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://roofroot-v2.onrender.com/api';
+
+// Debug API configuration
+console.log('🔧 API Configuration:', {
+  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+  API_BASE_URL,
+  NODE_ENV: process.env.NODE_ENV,
+  isClient: typeof window !== 'undefined'
+});
 
 // Create axios instance
 export const api = axios.create({
@@ -9,22 +17,24 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10 second timeout
+  timeout: 15000, // 15 second timeout for production
 });
 
 // Network connectivity check
 export const checkNetworkConnectivity = async (): Promise<boolean> => {
   try {
     // Try to fetch a small resource to check connectivity
-    await fetch(`${API_BASE_URL}/health`, { 
+    const response = await fetch(`${API_BASE_URL}/health`, { 
       method: 'HEAD',
       cache: 'no-cache',
-      signal: AbortSignal.timeout(3000) // 3 second timeout
+      signal: AbortSignal.timeout(5000) // 5 second timeout
     });
-    return true;
+    return response.ok;
   } catch (error) {
     console.warn('Network connectivity check failed:', error);
-    return false;
+    // Don't fail the entire request if health check fails
+    // This allows the app to work even if health check is down
+    return true;
   }
 };
 
@@ -124,10 +134,15 @@ const retryRequest = async (
 // Request interceptor to add auth token and handle token refresh
 api.interceptors.request.use(
   async (config) => {
-    // Check network connectivity first
-    const isOnline = await checkNetworkConnectivity();
-    if (!isOnline) {
-      throw new Error('No internet connection. Please check your network and try again.');
+    // Check network connectivity first (but don't block if it fails)
+    try {
+      const isOnline = await checkNetworkConnectivity();
+      if (!isOnline) {
+        console.warn('Network connectivity check failed, but proceeding with request');
+      }
+    } catch (error) {
+      console.warn('Network connectivity check error:', error);
+      // Continue with request even if health check fails
     }
 
     let token = authUtils.getAccessToken();
