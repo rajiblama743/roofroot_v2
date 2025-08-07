@@ -67,6 +67,9 @@ export const securityConfig = {
         'https://roofroot-web.netlify.app',
         'https://roofroot-web.onrender.com',
         'https://roofroot-web.railway.app',
+        // Custom domains
+        'https://roofchains.com',
+        'https://www.roofchains.com',
         // Vercel preview deployments
         'https://roofroot-v2.vercel.app',
         'https://roofroot-web-git-main-rajiblama.vercel.app',
