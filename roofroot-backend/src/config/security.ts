@@ -45,7 +45,10 @@ export const securityConfig = {
   cors: {
     origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (like mobile apps or Postman)
-      if (!origin) return callback(null, true);
+      if (!origin) {
+        console.log('✅ CORS: Allowing request with no origin');
+        return callback(null, true);
+      }
       
       // Get allowed origins from environment variable or use defaults
       const frontendUrls = process.env.FRONTEND_URLS 
@@ -58,15 +61,23 @@ export const securityConfig = {
         'http://localhost:3001',
         // Production domains from environment
         ...frontendUrls,
-        // Fallback domains
-        'https://your-deployed-domain.com',
-        'https://www.your-deployed-domain.com'
+        // Common deployment domains
+        'https://roofroot-web.vercel.app',
+        'https://roofroot-web.netlify.app',
+        'https://roofroot-web.onrender.com',
+        'https://roofroot-web.railway.app',
+        // Wildcard for development (remove in production)
+        ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
       ].filter(Boolean); // Remove undefined values
       
-      if (allowedOrigins.includes(origin)) {
+      console.log(`🌐 CORS: Request from origin: ${origin}`);
+      console.log(`🌐 CORS: Allowed origins:`, allowedOrigins);
+      
+      if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+        console.log('✅ CORS: Origin allowed');
         callback(null, true);
       } else {
-        console.warn(`CORS blocked request from: ${origin}`);
+        console.warn(`❌ CORS: Origin blocked: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },

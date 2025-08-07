@@ -130,9 +130,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // Login endpoint
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('🔐 Login attempt:', { email: req.body.email, timestamp: new Date().toISOString() });
+    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+      console.log('❌ Login validation failed:', errors.array());
       res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -146,6 +149,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('❌ Login failed: User not found for email:', email);
       res.status(401).json({
         success: false,
         message: 'Email not found. Please check your email address or register a new account.'
@@ -153,15 +157,20 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    console.log('✅ User found:', { userId: user._id, role: user.role, email: user.email });
+
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
+      console.log('❌ Login failed: Invalid password for user:', email);
       res.status(401).json({
         success: false,
         message: 'Incorrect password. Please check your password and try again.'
       });
       return;
     }
+
+    console.log('✅ Password validated for user:', email);
 
     // Generate JWT token
     const payload: JWTPayload = {
@@ -171,10 +180,13 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     };
 
     const token = generateAccessToken(payload);
+    console.log('✅ JWT token generated for user:', { userId: user._id, role: user.role });
 
     // Return user data without password
     const userResponse = user.toObject();
     delete (userResponse as any).password;
+
+    console.log('✅ Login successful for user:', { userId: user._id, role: user.role, email: user.email });
 
     res.status(200).json({
       success: true,
@@ -183,7 +195,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       user: userResponse
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('❌ Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error during login'

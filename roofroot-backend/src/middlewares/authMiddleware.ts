@@ -5,8 +5,8 @@ import User, { IUser } from '../models/User';
 import { AuthenticatedRequest, JWTPayload } from '../types/user';
 
 // Enhanced JWT configuration
-let JWT_SECRET = process.env.JWT_SECRET;
-let JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET;
+let JWT_SECRET: string | undefined = process.env.JWT_SECRET;
+let JWT_REFRESH_SECRET: string | undefined = process.env.JWT_REFRESH_SECRET;
 
 // Validate JWT secrets are set
 export const validateJWTSecrets = () => {
@@ -59,7 +59,15 @@ export const authenticateToken = async (
     }
 
     // Verify JWT token with enhanced security
-    const decoded = jwt.verify(token, JWT_SECRET, {
+    if (!JWT_SECRET) {
+      res.status(500).json({
+        success: false,
+        message: 'JWT_SECRET is not configured'
+      });
+      return;
+    }
+    
+    const decoded = jwt.verify(token, JWT_SECRET as string, {
       algorithms: [JWT_CONFIG.accessToken.algorithm]
     }) as unknown as JWTPayload;
     
@@ -111,7 +119,7 @@ export const generateAccessToken = (payload: JWTPayload): string => {
   if (!JWT_SECRET) {
     throw new Error('JWT_SECRET is not configured');
   }
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign(payload, JWT_SECRET as string, { expiresIn: '15m' });
 };
 
 // Helper function to generate refresh token
@@ -119,12 +127,15 @@ export const generateRefreshToken = (payload: JWTPayload): string => {
   if (!JWT_REFRESH_SECRET) {
     throw new Error('JWT_REFRESH_SECRET is not configured');
   }
-  return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  return jwt.sign(payload, JWT_REFRESH_SECRET as string, { expiresIn: '7d' });
 };
 
 // Helper function to verify refresh token
 export const verifyRefreshToken = (token: string): JWTPayload => {
-  return jwt.verify(token, JWT_REFRESH_SECRET, {
+  if (!JWT_REFRESH_SECRET) {
+    throw new Error('JWT_REFRESH_SECRET is not configured');
+  }
+  return jwt.verify(token, JWT_REFRESH_SECRET as string, {
     algorithms: [JWT_CONFIG.refreshToken.algorithm]
   }) as unknown as JWTPayload;
 };
