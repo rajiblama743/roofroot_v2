@@ -18,6 +18,7 @@ import {
   MapPin
 } from 'lucide-react';
 import { authUtils, validationUtils } from '@/lib/utils';
+import { apiClient } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface AgencyApplicationData {
@@ -50,16 +51,28 @@ export default function ApplyAgencyPage() {
     try {
       setLoading(true);
       
-      // For now, we'll just show a success message
-      // In a real application, this would send the application to admin for review
-      console.log('Agency application submitted:', data);
+      // Call the backend API to create the agency request
+      const response = await apiClient.requestAgency({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        phoneNumber: data.phoneNumber,
+        agencyName: data.agencyName,
+        agencyDescription: data.agencyDescription,
+        license: data.license,
+        address: data.address
+      });
       
-      toast.success('Agency application submitted successfully! We will review your application and contact you soon.');
-      setSubmitted(true);
+      if (response.success) {
+        toast.success('Agency application submitted successfully!');
+        setSubmitted(true);
+      } else {
+        toast.error(response.message || 'Failed to submit application');
+      }
       
     } catch (error: any) {
       console.error('Application error:', error);
-      toast.error('Failed to submit application. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to submit application. Please try again.');
     } finally {
       setLoading(false);
     }

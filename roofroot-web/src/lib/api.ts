@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://roofroot-v2.onrender.com/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3001/api' : 'https://roofroot-v2.onrender.com/api');
 
 // Debug API configuration
 console.log('🔧 API Configuration:', {
@@ -231,6 +231,7 @@ export const API_ENDPOINTS = {
   // Auth
   REGISTER: '/auth/register',
   LOGIN: '/auth/login',
+  REQUEST_AGENCY: '/auth/request-agency',
   
   // Users
   GET_USERS: '/users',
@@ -264,6 +265,13 @@ export const apiClient = {
         );
         authUtils.setUser(response.data.user);
       }
+      return response.data;
+    });
+  },
+  
+  requestAgency: async (data: RegisterData) => {
+    return retryRequest(async () => {
+      const response = await api.post(API_ENDPOINTS.REQUEST_AGENCY, data);
       return response.data;
     });
   },
@@ -450,6 +458,7 @@ export interface ListingFilters {
 
 export interface AgencySearchFilters {
   search?: string;
+  status?: 'active' | 'pending';
   page?: number;
   limit?: number;
 }
@@ -464,6 +473,7 @@ export interface Agency {
   license?: string;
   address?: string;
   role: 'agency';
+  status: 'active' | 'pending';
   createdAt: string;
   updatedAt: string;
 }

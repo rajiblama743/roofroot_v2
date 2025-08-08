@@ -12,7 +12,8 @@ import {
   LogOut, 
   Menu, 
   X,
-  User
+  User,
+  Clock
 } from 'lucide-react';
 import { authService } from '@/services/auth';
 
@@ -24,6 +25,7 @@ const navigation = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Agencies', href: '/agencies', icon: Building2 },
+  { name: 'Requests', href: '/requests', icon: Clock },
   { name: 'Listings', href: '/listings', icon: Search },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

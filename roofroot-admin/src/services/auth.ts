@@ -5,6 +5,7 @@ export interface AdminUser {
   name: string;
   email: string;
   role: 'admin';
+  status?: 'active' | 'pending';
   createdAt: string;
   updatedAt: string;
 }
@@ -15,9 +16,9 @@ export const authService = {
     try {
       const response = await api.login(email, password);
       
-      if (response.success && response.accessToken) {
+      if (response.success && response.token) {
         // Store token and user data
-        localStorage.setItem('adminToken', response.accessToken);
+        localStorage.setItem('adminToken', response.token);
         localStorage.setItem('adminUser', JSON.stringify(response.user));
         
         // Verify user is admin
@@ -83,8 +84,18 @@ export const authService = {
       // For now, just check if we have a valid token and admin user locally
       // In a real app, you'd verify with the backend
       const user = authService.getCurrentUser();
-      return !!(token && user && user.role === 'admin');
-    } catch {
+      const isValid = !!(token && user && user.role === 'admin');
+      
+      console.log('🔐 Auth verification:', { 
+        hasToken: !!token, 
+        hasUser: !!user, 
+        userRole: user?.role, 
+        isValid 
+      });
+      
+      return isValid;
+    } catch (error) {
+      console.error('🔐 Auth verification error:', error);
       authService.logout();
       return false;
     }

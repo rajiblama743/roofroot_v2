@@ -34,6 +34,7 @@ function FindAgencyContent() {
         page,
         limit: 12,
         search: searchParams.get('search') || undefined,
+        status: 'active', // Only show active agencies
       };
 
       const response = await apiClient.searchAgencies(params);

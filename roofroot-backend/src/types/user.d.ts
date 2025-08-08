@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IUser, UserRole } from '../models/User';
+import { IUser, UserRole, UserStatus } from '../models/User';
 
 // Extended Request interface with user property
 export interface AuthenticatedRequest extends Request {
@@ -27,6 +27,7 @@ export interface LoginRequest {
 // User creation request type (admin only)
 export interface CreateUserRequest extends RegisterRequest {
   role: UserRole;
+  status?: UserStatus;
 }
 
 // User update request type
@@ -39,6 +40,12 @@ export interface UpdateUserRequest {
   license?: string;
   address?: string;
   role?: UserRole;
+  status?: UserStatus;
+}
+
+// Status update request type (admin only)
+export interface UpdateUserStatusRequest {
+  status: UserStatus;
 }
 
 // JWT payload type

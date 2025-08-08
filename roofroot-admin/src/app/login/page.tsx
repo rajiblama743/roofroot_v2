@@ -26,25 +26,29 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log('Attempting login with:', { email });
+      console.log('🔐 Login attempt with:', { email });
       const response = await authService.login(email, password);
-      console.log('Login response:', response);
+      console.log('🔐 Login response:', response);
       
       toast.success('Login successful');
       
       // Check if user is admin
       const currentUser = authService.getCurrentUser();
-      console.log('Current user after login:', currentUser);
+      console.log('🔐 Current user after login:', currentUser);
       
       if (currentUser && currentUser.role === 'admin') {
-        console.log('User is admin, redirecting to dashboard');
-        router.push('/');
+        console.log('🔐 User is admin, redirecting to dashboard');
+        // Force redirect to dashboard
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 100);
       } else {
-        console.log('User is not admin, staying on login page');
+        console.log('🔐 User is not admin, staying on login page');
         toast.error('Access denied. Admin role required.');
+        authService.logout();
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error('🔐 Login error:', error);
       toast.error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);

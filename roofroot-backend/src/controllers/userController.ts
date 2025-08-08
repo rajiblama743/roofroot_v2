@@ -261,6 +261,60 @@ export const updateUser = async (req: AuthenticatedRequest, res: Response): Prom
   }
 };
 
+// Update user status (admin only)
+export const updateUserStatus = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.params.id;
+    const { status }: { status: 'active' | 'pending' } = req.body;
+
+    // Check if user exists
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    // Prevent changing status for admins
+    if (existingUser.role === 'admin') {
+      res.status(403).json({
+        success: false,
+        message: 'Cannot change status for admin accounts'
+      });
+      return;
+    }
+
+    // Update user status
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { status },
+      { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+      res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'User status updated successfully',
+      user: updatedUser
+    });
+  } catch (error) {
+    console.error('Update user status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while updating user status'
+    });
+  }
+};
+
 // Delete user (admin only)
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -292,15 +346,19 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-// Search agencies by location
+// Search agencies by location (updated to filter by status)
 export const searchAgencies = async (req: Request, res: Response): Promise<void> => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const search = req.query.search as string;
+    const status = req.query.status as string || 'active'; // Default to active
 
-    // Build query for agencies only
-    const query: any = { role: 'agency' };
+    // Build query for agencies only with status filter
+    const query: any = { 
+      role: 'agency',
+      status: status // Filter by status
+    };
     
     if (search) {
       // Search in agencyName, address, and agencyDescription

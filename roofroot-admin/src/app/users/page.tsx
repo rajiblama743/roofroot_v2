@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Plus, Trash2, Eye } from 'lucide-react';
 import { withAdminGuard } from '@/components/withAdminGuard';
 import AdminLayout from '@/components/AdminLayout';
 import Table from '@/components/Table';
@@ -15,12 +16,14 @@ interface User {
   name: string;
   email: string;
   role: 'admin' | 'agency' | 'customer';
+  status?: 'active' | 'pending';
   phoneNumber?: string;
   agencyName?: string;
   createdAt: string;
 }
 
 function UsersPage() {
+  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -84,37 +87,58 @@ function UsersPage() {
     );
   };
 
+  const getStatusBadge = (status: string) => {
+    if (status === 'active') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Active
+        </span>
+      );
+    } else if (status === 'pending') {
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          Pending
+        </span>
+      );
+    }
+    return null;
+  };
+
   const columns = [
-    { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
+    { key: 'name', label: 'Name', className: 'min-w-[120px]' },
+    { key: 'email', label: 'Email', className: 'min-w-[180px]' },
     { 
       key: 'role', 
       label: 'Role',
+      className: 'min-w-[80px]',
       render: (value: string) => getRoleBadge(value)
     },
-    { key: 'agencyName', label: 'Agency' },
-    { key: 'phoneNumber', label: 'Phone' },
+    { 
+      key: 'status', 
+      label: 'Status',
+      className: 'min-w-[80px]',
+      render: (value: string) => getStatusBadge(value)
+    },
+    { key: 'agencyName', label: 'Agency', className: 'min-w-[120px]' },
+    { key: 'phoneNumber', label: 'Phone', className: 'min-w-[120px]' },
     {
       key: 'createdAt',
       label: 'Created',
+      className: 'min-w-[100px]',
       render: (value: string) => new Date(value).toLocaleDateString()
     },
     {
       key: 'actions',
       label: 'Actions',
+      className: 'min-w-[100px]',
       render: (value: any, row: User) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => {/* TODO: View user details */}}
+            onClick={() => router.push(`/users/${row._id}`)}
             className="text-blue-600 hover:text-blue-900"
+            title="View Details"
           >
             <Eye className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => {/* TODO: Edit user */}}
-            className="text-green-600 hover:text-green-900"
-          >
-            <Edit className="h-4 w-4" />
           </button>
           <button
             onClick={() => {
@@ -122,6 +146,7 @@ function UsersPage() {
               setShowDeleteDialog(true);
             }}
             className="text-red-600 hover:text-red-900"
+            title="Delete User"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -168,7 +193,7 @@ function UsersPage() {
           />
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 overflow-x-auto">
           <Table
             columns={columns}
             data={filteredUsers}

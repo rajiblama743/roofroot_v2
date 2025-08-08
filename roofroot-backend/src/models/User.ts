@@ -4,6 +4,9 @@ import bcrypt from 'bcryptjs';
 // User role type
 export type UserRole = 'admin' | 'agency' | 'customer';
 
+// User status type
+export type UserStatus = 'active' | 'pending';
+
 // Interface for User document
 export interface IUser extends Document {
   name: string;
@@ -15,6 +18,7 @@ export interface IUser extends Document {
   license?: string;
   address?: string;
   role: UserRole;
+  status: UserStatus;
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
@@ -74,6 +78,15 @@ const userSchema = new Schema<IUser>({
     },
     default: 'customer',
     required: true
+  },
+  status: {
+    type: String,
+    enum: {
+      values: ['active', 'pending'],
+      message: 'Status must be either active or pending'
+    },
+    default: 'active',
+    required: true
   }
 }, {
   timestamps: true,
@@ -85,7 +98,7 @@ const userSchema = new Schema<IUser>({
   }
 });
 
-// Pre-save middleware to hash password
+// Pre-save middleware to hash password and set default status
 userSchema.pre('save', async function(next) {
   // Only hash the password if it has been modified (or is new)
   if (!this.isModified('password')) return next();
@@ -98,6 +111,19 @@ userSchema.pre('save', async function(next) {
   } catch (error) {
     next(error as Error);
   }
+});
+
+// Pre-save middleware to set default status based on role
+userSchema.pre('save', function(next) {
+  // Set default status based on role if status is not explicitly set
+  if (this.isNew && !this.status) {
+    if (this.role === 'agency') {
+      this.status = 'pending';
+    } else {
+      this.status = 'active';
+    }
+  }
+  next();
 });
 
 // Method to compare password

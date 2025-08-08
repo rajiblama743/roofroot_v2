@@ -55,6 +55,11 @@ export const api = {
     return response.data;
   },
 
+  getUser: async (id: string) => {
+    const response = await apiClient.get(`/users/${id}`);
+    return response.data;
+  },
+
   createUser: async (userData: any) => {
     const response = await apiClient.post('/users', userData);
     return response.data;
@@ -62,6 +67,11 @@ export const api = {
 
   updateUser: async (id: string, userData: any) => {
     const response = await apiClient.put(`/users/${id}`, userData);
+    return response.data;
+  },
+
+  updateUserStatus: async (id: string, statusData: { status: 'active' | 'pending' }) => {
+    const response = await apiClient.patch(`/users/${id}/status`, statusData);
     return response.data;
   },
 
@@ -73,6 +83,11 @@ export const api = {
   // Listings
   getListings: async (params?: any) => {
     const response = await apiClient.get('/listings', { params });
+    return response.data;
+  },
+
+  getListing: async (id: string) => {
+    const response = await apiClient.get(`/listings/${id}`);
     return response.data;
   },
 

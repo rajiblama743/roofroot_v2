@@ -6,6 +6,7 @@ import {
   updateUser,
   deleteUser,
   searchAgencies,
+  updateUserStatus,
   validateCreateUser,
   validateUpdateUser
 } from '../controllers/userController';
@@ -29,6 +30,7 @@ router.use(authenticateToken);
 router.post('/', requireAdmin, validateCreateUser, createUser); // Create any user (admin only)
 router.get('/', requireAdmin, getAllUsers); // Get all users (admin only)
 router.delete('/:id', requireDeleteUserPermissionById, deleteUser); // Delete user (admin or own account)
+router.patch('/:id/status', requireAdmin, updateUserStatus); // Update user status (admin only)
 
 // Routes with ownership checks
 router.get('/:id', requireOwnershipOrAdmin, getUserById); // Get user (own profile or admin)

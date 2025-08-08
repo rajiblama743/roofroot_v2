@@ -157,7 +157,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    console.log('✅ User found:', { userId: user._id, role: user.role, email: user.email });
+    console.log('✅ User found:', { userId: user._id, role: user.role, status: user.status, email: user.email });
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
@@ -171,6 +171,16 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     console.log('✅ Password validated for user:', email);
+
+    // Check user status for agencies
+    if (user.role === 'agency' && user.status === 'pending') {
+      console.log('❌ Login failed: Agency account is pending approval:', email);
+      res.status(403).json({
+        success: false,
+        message: 'Your account is pending approval.'
+      });
+      return;
+    }
 
     // Generate JWT token
     const payload: JWTPayload = {
@@ -199,6 +209,66 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({
       success: false,
       message: 'Internal server error during login'
+    });
+  }
+};
+
+// Agency request endpoint
+export const requestAgency = async (req: Request, res: Response): Promise<void> => {
+  try {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      res.status(400).json({
+        success: false,
+        message: 'Validation failed',
+        errors: errors.array().map(err => err.msg)
+      });
+      return;
+    }
+
+    const { name, email, password, phoneNumber, agencyName, agencyDescription, license, address }: RegisterRequest = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      res.status(400).json({
+        success: false,
+        message: 'User with this email already exists'
+      });
+      return;
+    }
+
+    // Create new agency user with pending status
+    const user = new User({
+      name,
+      email,
+      password,
+      phoneNumber,
+      agencyName,
+      agencyDescription,
+      license,
+      address,
+      role: 'agency',
+      status: 'pending' // Explicitly set to pending
+    });
+
+    await user.save();
+
+    // Return user data without password
+    const userResponse = user.toObject();
+    delete (userResponse as any).password;
+
+    res.status(201).json({
+      success: true,
+      message: 'Agency request submitted successfully. Your account will be reviewed by an administrator.',
+      user: userResponse
+    });
+  } catch (error) {
+    console.error('Agency request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error during agency request'
     });
   }
 };

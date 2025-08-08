@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Trash2, Eye, Filter } from 'lucide-react';
 import { withAdminGuard } from '@/components/withAdminGuard';
 import AdminLayout from '@/components/AdminLayout';
@@ -28,6 +29,7 @@ interface Listing {
 }
 
 function ListingsPage() {
+  const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [filteredListings, setFilteredListings] = useState<Listing[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,38 +105,44 @@ function ListingsPage() {
   };
 
   const columns = [
-    { key: 'title', label: 'Title' },
-    { key: 'location', label: 'Location' },
+    { key: 'title', label: 'Title', className: 'min-w-[200px]' },
+    { key: 'location', label: 'Location', className: 'min-w-[150px]' },
     { 
       key: 'price', 
       label: 'Price',
+      className: 'min-w-[100px]',
       render: (value: number) => formatPrice(value)
     },
     { 
       key: 'type', 
       label: 'Type',
+      className: 'min-w-[80px]',
       render: (value: string) => getTypeBadge(value)
     },
-    { key: 'bedrooms', label: 'Bedrooms' },
-    { key: 'bathrooms', label: 'Bathrooms' },
+    { key: 'bedrooms', label: 'Bedrooms', className: 'min-w-[80px]' },
+    { key: 'bathrooms', label: 'Bathrooms', className: 'min-w-[80px]' },
     {
       key: 'createdBy',
       label: 'Created By',
+      className: 'min-w-[120px]',
       render: (value: any) => value?.name || 'Unknown'
     },
     {
       key: 'createdAt',
       label: 'Created',
+      className: 'min-w-[100px]',
       render: (value: string) => new Date(value).toLocaleDateString()
     },
     {
       key: 'actions',
       label: 'Actions',
+      className: 'min-w-[100px]',
       render: (value: any, row: Listing) => (
         <div className="flex space-x-2">
           <button
-            onClick={() => {/* TODO: View listing details */}}
+            onClick={() => router.push(`/listings/${row._id}`)}
             className="text-blue-600 hover:text-blue-900"
+            title="View Details"
           >
             <Eye className="h-4 w-4" />
           </button>
@@ -144,6 +152,7 @@ function ListingsPage() {
               setShowDeleteDialog(true);
             }}
             className="text-red-600 hover:text-red-900"
+            title="Delete Listing"
           >
             <Trash2 className="h-4 w-4" />
           </button>
@@ -196,7 +205,7 @@ function ListingsPage() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 overflow-x-auto">
           <Table
             columns={columns}
             data={filteredListings}

@@ -50,6 +50,12 @@ export default function LoginPage() {
         toast.error(response.message || 'Login failed');
       }
     } catch (error: any) {
+      // Handle specific 403 error for pending approval
+      if (error.response?.status === 403 && error.response?.data?.message === 'Your account is pending approval.') {
+        toast.error('Your account is pending approval. Please contact an administrator.');
+        return;
+      }
+      
       handleAuthError(error);
     } finally {
       setLoading(false);
