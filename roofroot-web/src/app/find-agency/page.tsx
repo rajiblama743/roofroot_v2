@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { Search, Building2, Mail, Phone, MapPin, Calendar } from 'lucide-react';
 import { apiClient, Agency, AgencySearchFilters } from '@/lib/api';
 import { formatDate, slugUtils } from '@/lib/utils';
@@ -164,7 +165,13 @@ function FindAgencyContent() {
                 >
                   <div className="p-6">
                     <div className="flex items-center mb-4">
-                      <Building2 className="w-8 h-8 text-blue-600 mr-3" />
+                      <Image 
+                        src="/roofchains-logo.png" 
+                        alt="RoofChains Logo" 
+                        width={32} 
+                        height={32} 
+                        className="w-8 h-8 mr-3"
+                      />
                       <div>
                                                  <h3 className="font-semibold text-gray-900 text-lg">
                            {agency.agencyName || agency.name}
@@ -251,7 +258,13 @@ function FindAgencyContent() {
           </>
         ) : !loading && (
           <div className="text-center py-12">
-            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Image 
+              src="/roofchains-logo.png" 
+              alt="RoofChains Logo" 
+              width={64} 
+              height={64} 
+              className="w-16 h-16 mx-auto mb-4 opacity-40"
+            />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No agencies found</h3>
             <p className="text-gray-600">
               {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new agencies.'}

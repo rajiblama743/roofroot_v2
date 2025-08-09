@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { Building2, MapPin, Phone, Mail, Globe, Star } from 'lucide-react';
 import { apiClient } from '@/lib/api';
 import { authUtils } from '@/lib/utils';
@@ -85,7 +86,13 @@ export default function AgenciesPage() {
           </div>
         ) : agencies.length === 0 ? (
           <div className="text-center py-12">
-            <Building2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <Image 
+              src="/roofchains-logo.png" 
+              alt="RoofChains Logo" 
+              width={64} 
+              height={64} 
+              className="w-16 h-16 mx-auto mb-4 opacity-40"
+            />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No agencies available yet
             </h3>
@@ -99,8 +106,14 @@ export default function AgenciesPage() {
               <div key={agency._id} className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                      <Building2 className="w-6 h-6 text-white" />
+                    <div className="w-12 h-12 bg-white rounded-lg flex items-center justify-center shadow-sm border">
+                      <Image 
+                        src="/roofchains-logo.png" 
+                        alt="RoofChains Logo" 
+                        width={24} 
+                        height={24} 
+                        className="w-6 h-6"
+                      />
                     </div>
                     <div className="ml-3">
                       <h3 className="text-lg font-semibold text-gray-900">

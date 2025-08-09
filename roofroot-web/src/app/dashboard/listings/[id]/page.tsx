@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { 
   ArrowLeft, 
@@ -327,8 +328,14 @@ export default function DashboardListingDetailPage() {
                 <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-gray-200">
                   <h4 className="text-xs sm:text-sm font-semibold text-gray-900 mb-3">Listed by</h4>
                   <div className="flex items-center">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                      <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-white rounded-full flex items-center justify-center shadow-sm border">
+                      <Image 
+                        src="/roofchains-logo.png" 
+                        alt="RoofChains Logo" 
+                        width={20} 
+                        height={20} 
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                      />
                     </div>
                     <div className="ml-3">
                       <p className="text-xs sm:text-sm font-semibold text-gray-900">

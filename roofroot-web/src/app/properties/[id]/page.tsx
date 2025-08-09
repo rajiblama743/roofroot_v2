@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, MapPin, DollarSign, Calendar, Building2, Bed, Bath, Square, Edit, Trash2, Car, Home } from 'lucide-react';
 import { apiClient, Listing } from '@/lib/api';
 import { authUtils, formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
@@ -343,8 +344,14 @@ export default function PropertyDetailPage() {
                 <div className="mt-6 pt-6 border-t border-gray-200">
                   <h4 className="text-sm font-semibold text-gray-900 mb-3">Listed by</h4>
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-white" />
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border">
+                      <Image 
+                        src="/roofchains-logo.png" 
+                        alt="RoofChains Logo" 
+                        width={20} 
+                        height={20} 
+                        className="w-5 h-5"
+                      />
                     </div>
                     <div className="ml-3">
                       <Link 

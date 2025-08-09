@@ -7,6 +7,7 @@ import SearchBar from '@/components/SearchBar';
 import FeaturedListings from '@/components/FeaturedListings';
 import { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { 
   Search, 
   Building2, 
@@ -82,8 +83,14 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-center">
             <div className="flex flex-col items-center">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mb-3 sm:mb-4">
-                <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-50 rounded-full flex items-center justify-center mb-3 sm:mb-4">
+                <Image 
+                  src="/roofchains-logo.png" 
+                  alt="RoofChains Logo" 
+                  width={32} 
+                  height={32} 
+                  className="w-6 h-6 sm:w-8 sm:h-8"
+                />
               </div>
               <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">500+</h3>
               <p className="text-sm sm:text-base text-gray-600">Properties Listed</p>

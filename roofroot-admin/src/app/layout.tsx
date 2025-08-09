@@ -6,8 +6,8 @@ import { Toaster } from "react-hot-toast";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "RoofRoot Admin - Property Management",
-  description: "Admin dashboard for RoofRoot property management platform",
+  title: "RoofChains Admin - Property Management",
+  description: "Admin dashboard for RoofChains property management platform",
   robots: "noindex, nofollow", // Keep admin panel private
 };
 

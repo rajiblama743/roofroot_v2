@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { 
   Building2, 
   Plus, 
@@ -172,7 +173,13 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <div className="bg-white rounded-lg shadow-md p-2 sm:p-4 lg:p-6 flex flex-col justify-center min-h-[80px] sm:min-h-0 sm:aspect-auto lg:aspect-auto">
             <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
-              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-blue-600 mb-1 sm:mb-0 sm:mr-2 lg:mr-3" />
+              <Image 
+                src="/roofchains-logo.png" 
+                alt="RoofChains Logo" 
+                width={32} 
+                height={32} 
+                className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mb-1 sm:mb-0 sm:mr-2 lg:mr-3"
+              />
               <div className="sm:ml-2 lg:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Total Listings</p>
                 <p className="text-sm sm:text-xl lg:text-2xl font-bold text-gray-900">{listings.length}</p>
@@ -206,7 +213,13 @@ export default function DashboardPage() {
           
           <div className="bg-white rounded-lg shadow-md p-2 sm:p-4 lg:p-6 flex flex-col justify-center min-h-[80px] sm:min-h-0 sm:aspect-auto lg:aspect-auto">
             <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left">
-              <Building2 className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-orange-600 mb-1 sm:mb-0 sm:mr-2 lg:mr-3" />
+              <Image 
+                src="/roofchains-logo.png" 
+                alt="RoofChains Logo" 
+                width={32} 
+                height={32} 
+                className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 mb-1 sm:mb-0 sm:mr-2 lg:mr-3"
+              />
               <div className="sm:ml-2 lg:ml-4">
                 <p className="text-xs sm:text-sm font-medium text-gray-600">Active Listings</p>
                 <p className="text-sm sm:text-xl lg:text-2xl font-bold text-gray-900">{listings.length}</p>

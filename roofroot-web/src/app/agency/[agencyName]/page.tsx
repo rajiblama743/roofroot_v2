@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Building2, Calendar, MapPin, DollarSign, Mail, Phone, MapPin as MapPinIcon, Share } from 'lucide-react';
 import { apiClient, Listing, ListingFilters } from '@/lib/api';
 import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils, slugUtils } from '@/lib/utils';
@@ -195,8 +196,14 @@ export default function AgencyListingsPage() {
             <div className="hidden lg:flex lg:flex-row gap-6">
               {/* Left side - Agency info */}
               <div className="flex flex-row items-start gap-6 flex-1">
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <Building2 className="w-8 h-8 text-white" />
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-sm border">
+                  <Image 
+                    src="/roofchains-logo.png" 
+                    alt="RoofChains Logo" 
+                    width={32} 
+                    height={32} 
+                    className="w-8 h-8"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-2xl font-bold text-gray-900 leading-tight mb-1">
@@ -263,8 +270,14 @@ export default function AgencyListingsPage() {
             <div className="lg:hidden">
               {/* Agency info with logo */}
               <div className="flex flex-col sm:flex-row sm:items-start gap-3 sm:gap-4 text-center sm:text-left">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0">
-                  <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center flex-shrink-0 mx-auto sm:mx-0 shadow-sm border">
+                  <Image 
+                    src="/roofchains-logo.png" 
+                    alt="RoofChains Logo" 
+                    width={32} 
+                    height={32} 
+                    className="w-6 h-6 sm:w-8 sm:h-8"
+                  />
                 </div>
                 <div className="flex-1 min-w-0">
                   <h1 className="text-lg sm:text-xl font-bold text-gray-900 leading-tight mb-1">
@@ -373,7 +386,13 @@ export default function AgencyListingsPage() {
         {/* Results */}
         {listings.length === 0 ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-            <Building2 className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+            <Image 
+              src="/roofchains-logo.png" 
+              alt="RoofChains Logo" 
+              width={64} 
+              height={64} 
+              className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 opacity-40"
+            />
             <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">No Listings Found</h2>
             <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6">
               This agency doesn't have any active listings at the moment.

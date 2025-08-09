@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
+import Image from 'next/image';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Building2, ArrowRight, MapPin } from 'lucide-react';
 import { apiClient, RegisterData } from '@/lib/api';
 import { authUtils, validationUtils } from '@/lib/utils';
@@ -58,9 +59,13 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <Building2 className="w-8 h-8 text-white" />
-          </div>
+          <Image 
+            src="/roofchains-logo.png" 
+            alt="RoofChains Logo" 
+            width={48} 
+            height={48} 
+            className="w-12 h-12"
+          />
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Create your customer account

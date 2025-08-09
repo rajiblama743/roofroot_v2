@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { 
   Home, 
   Search, 
@@ -55,9 +56,13 @@ const Header = () => {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href={user?.role === 'agency' ? "/dashboard" : "/"} className="flex items-center">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
+              <Image 
+                src="/roofchains-logo.png" 
+                alt="RoofChains Logo" 
+                width={32} 
+                height={32} 
+                className="w-7 h-7 sm:w-8 sm:h-8"
+              />
               <span className="ml-2 text-base sm:text-lg lg:text-xl font-bold text-gray-900">RoofChains</span>
             </Link>
           </div>
