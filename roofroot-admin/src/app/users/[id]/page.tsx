@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, User, Mail, Phone, MapPin, Calendar, Building2, Shield, UserCheck } from 'lucide-react';
+import { ArrowLeft, User, Mail, Phone, MapPin, Calendar, Building2, Shield, UserCheck, CheckCircle, Clock } from 'lucide-react';
 import { withAdminGuard } from '@/components/withAdminGuard';
 import AdminLayout from '@/components/AdminLayout';
 import api from '@/services/api';
@@ -28,6 +28,7 @@ function UserDetailPage() {
   const router = useRouter();
   const [user, setUser] = useState<UserDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -44,6 +45,29 @@ function UserDetailPage() {
       toast.error('Failed to load user details');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleStatusUpdate = async (newStatus: 'active' | 'pending') => {
+    if (!user) return;
+
+    try {
+      setUpdatingStatus(true);
+      await api.updateUserStatus(user._id, { status: newStatus });
+      
+      if (newStatus === 'active') {
+        toast.success('User approved successfully');
+      } else {
+        toast.success('User status updated');
+      }
+      
+      // Refresh user data
+      fetchUser(user._id);
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast.error('Failed to update user status');
+    } finally {
+      setUpdatingStatus(false);
     }
   };
 
@@ -140,10 +164,36 @@ function UserDetailPage() {
             </div>
           </div>
           
-          {/* Status and Role */}
+          {/* Status, Role, and Actions */}
           <div className="flex items-center space-x-4">
             {getStatusBadge(user.status)}
             {getRoleBadge(user.role)}
+            
+            {/* Show approval/status change buttons for agency users */}
+            {user.role === 'agency' && (
+              <div className="flex space-x-2">
+                {user.status === 'pending' && (
+                  <button
+                    onClick={() => handleStatusUpdate('active')}
+                    disabled={updatingStatus}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1" />
+                    {updatingStatus ? 'Approving...' : 'Approve'}
+                  </button>
+                )}
+                {user.status === 'active' && (
+                  <button
+                    onClick={() => handleStatusUpdate('pending')}
+                    disabled={updatingStatus}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 disabled:opacity-50"
+                  >
+                    <Clock className="h-4 w-4 mr-1" />
+                    {updatingStatus ? 'Updating...' : 'Set Pending'}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

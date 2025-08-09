@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Plus, Trash2, Eye } from 'lucide-react';
+import { Plus, Trash2, Eye, CheckCircle, Clock } from 'lucide-react';
 import { withAdminGuard } from '@/components/withAdminGuard';
 import AdminLayout from '@/components/AdminLayout';
 import Table from '@/components/Table';
@@ -30,6 +30,7 @@ function UsersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
@@ -70,6 +71,27 @@ function UsersPage() {
     } catch (error) {
       console.error('Error deleting user:', error);
       toast.error('Failed to delete user');
+    }
+  };
+
+  const handleStatusUpdate = async (userId: string, newStatus: 'active' | 'pending') => {
+    try {
+      setUpdatingStatus(userId);
+      await api.updateUserStatus(userId, { status: newStatus });
+      
+      if (newStatus === 'active') {
+        toast.success('User approved successfully');
+      } else {
+        toast.success('User status updated');
+      }
+      
+      // Refresh the list
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user status:', error);
+      toast.error('Failed to update user status');
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -130,9 +152,31 @@ function UsersPage() {
     {
       key: 'actions',
       label: 'Actions',
-      className: 'min-w-[100px]',
+      className: 'min-w-[120px]',
       render: (value: any, row: User) => (
         <div className="flex space-x-2">
+          {/* Show approval/rejection buttons for pending agency users */}
+          {row.role === 'agency' && row.status === 'pending' && (
+            <button
+              onClick={() => handleStatusUpdate(row._id, 'active')}
+              disabled={updatingStatus === row._id}
+              className="text-green-600 hover:text-green-900 disabled:opacity-50"
+              title="Approve Agency"
+            >
+              <CheckCircle className="h-4 w-4" />
+            </button>
+          )}
+          {/* Show pending button for active agency users */}
+          {row.role === 'agency' && row.status === 'active' && (
+            <button
+              onClick={() => handleStatusUpdate(row._id, 'pending')}
+              disabled={updatingStatus === row._id}
+              className="text-yellow-600 hover:text-yellow-900 disabled:opacity-50"
+              title="Set to Pending"
+            >
+              <Clock className="h-4 w-4" />
+            </button>
+          )}
           <button
             onClick={() => router.push(`/users/${row._id}`)}
             className="text-blue-600 hover:text-blue-900"
@@ -190,6 +234,8 @@ function UsersPage() {
             value={searchTerm}
             onChange={setSearchTerm}
             className="max-w-md"
+            id="users-search"
+            name="usersSearch"
           />
         </div>
 

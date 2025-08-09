@@ -171,6 +171,8 @@ function RequestsPage() {
             value={searchTerm}
             onChange={setSearchTerm}
             className="max-w-md"
+            id="requests-search"
+            name="requestsSearch"
           />
         </div>
 

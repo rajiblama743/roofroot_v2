@@ -189,6 +189,8 @@ function ListingsPage() {
             value={searchTerm}
             onChange={setSearchTerm}
             className="max-w-md"
+            id="listings-search"
+            name="listingsSearch"
           />
           
           <div className="flex items-center space-x-2">

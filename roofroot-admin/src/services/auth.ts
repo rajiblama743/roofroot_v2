@@ -6,6 +6,7 @@ export interface AdminUser {
   email: string;
   role: 'admin';
   status?: 'active' | 'pending';
+  phoneNumber?: string;
   createdAt: string;
   updatedAt: string;
 }

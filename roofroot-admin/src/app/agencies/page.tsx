@@ -172,6 +172,8 @@ function AgenciesPage() {
             value={searchTerm}
             onChange={setSearchTerm}
             className="max-w-md"
+            id="agencies-search"
+            name="agenciesSearch"
           />
         </div>
 

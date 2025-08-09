@@ -59,6 +59,7 @@ export const securityConfig = {
         // Local development (always allowed)
         'http://localhost:3000',
         'http://localhost:3001',
+        'http://localhost:3007', // Admin app
         // Production domains from environment
         ...frontendUrls,
         // Common deployment domains
@@ -96,7 +97,7 @@ export const securityConfig = {
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
     exposedHeaders: ['X-CSRF-Token']
   },
