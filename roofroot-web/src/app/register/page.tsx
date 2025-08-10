@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import Image from 'next/image';
 import { Eye, EyeOff, Mail, Lock, User, Phone, Building2, ArrowRight, MapPin } from 'lucide-react';
 import { apiClient, RegisterData } from '@/lib/api';
-import { authUtils, validationUtils } from '@/lib/utils';
+import { validationUtils } from '@/lib/utils';
 import { handleAuthError } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 
@@ -39,9 +39,7 @@ export default function RegisterPage() {
       const response = await apiClient.register(registerData);
       
       if (response.success) {
-        // Store token and user data
-        authUtils.setToken(response.token);
-        authUtils.setUser(response.user);
+        // API client already stores tokens and user data
         
         toast.success('Registration successful! Welcome to RoofChains!');
         router.push('/properties');

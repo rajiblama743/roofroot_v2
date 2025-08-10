@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { authUtils } from '@/lib/utils';
+
 import SearchBar from '@/components/SearchBar';
 import FeaturedListings from '@/components/FeaturedListings';
 import { Suspense } from 'react';
@@ -24,7 +24,7 @@ export default function HomePage() {
 
   useEffect(() => {
     // Check if user is logged in and is an agency
-    const user = authUtils.getUser();
+    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
     if (user && user.role === 'agency') {
       router.push('/dashboard');
     }

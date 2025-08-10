@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, MapPin, DollarSign, Calendar, Building2, Bed, Bath, Square, Edit, Trash2, Car, Home } from 'lucide-react';
 import { apiClient, Listing } from '@/lib/api';
-import { authUtils, formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
+import { formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -18,14 +18,14 @@ export default function PropertyDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const user = authUtils.getUser();
+  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
   const [isFromDashboard, setIsFromDashboard] = useState(false);
   const [isFromAgency, setIsFromAgency] = useState(false);
   const [agencyName, setAgencyName] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if user came from dashboard
-    const currentUser = authUtils.getUser();
+    const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
     setIsFromDashboard(currentUser?.role === 'agency');
     
     // Check if we came from an agency page

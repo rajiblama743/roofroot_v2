@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, Save, X } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { authUtils } from '@/lib/utils';
+
 import { handleListingError } from '@/lib/errorHandler';
 
 interface CreateListingForm {
@@ -47,7 +47,7 @@ export default function AddPropertyPage() {
     }
   });
 
-  const user = authUtils.getUser();
+  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
 
   useEffect(() => {
     // Check if user is logged in and is an agency

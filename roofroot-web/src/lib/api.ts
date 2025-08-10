@@ -257,11 +257,12 @@ export const apiClient = {
     return retryRequest(async () => {
       const response = await api.post(API_ENDPOINTS.REGISTER, data);
       // Store tokens and user data on successful registration
-      if (response.data.success && response.data.accessToken) {
+      if (response.data.success && response.data.token) {
+        // Backend returns 'token', not 'accessToken'
         authUtils.setTokens(
-          response.data.accessToken,
-          response.data.refreshToken,
-          response.data.csrfToken
+          response.data.token,
+          '', // No refresh token in current backend
+          ''  // No CSRF token in current backend
         );
         authUtils.setUser(response.data.user);
       }
@@ -280,11 +281,12 @@ export const apiClient = {
     return retryRequest(async () => {
       const response = await api.post(API_ENDPOINTS.LOGIN, data);
       // Store tokens and user data on successful login
-      if (response.data.success && response.data.accessToken) {
+      if (response.data.success && response.data.token) {
+        // Backend returns 'token', not 'accessToken'
         authUtils.setTokens(
-          response.data.accessToken,
-          response.data.refreshToken,
-          response.data.csrfToken
+          response.data.token,
+          '', // No refresh token in current backend
+          ''  // No CSRF token in current backend
         );
         authUtils.setUser(response.data.user);
       }

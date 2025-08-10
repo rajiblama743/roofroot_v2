@@ -14,7 +14,6 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { authUtils } from '@/lib/utils';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -23,12 +22,17 @@ const Header = () => {
   const pathname = usePathname();
 
   useEffect(() => {
-    const currentUser = authUtils.getUser();
-    setUser(currentUser);
+    // Get user from sessionStorage (API client stores it there)
+    const currentUser = sessionStorage.getItem('user');
+    if (currentUser) {
+      setUser(JSON.parse(currentUser));
+    }
   }, [pathname]); // Re-run when pathname changes
 
   const handleLogout = () => {
-    authUtils.logout();
+    // Clear all auth data
+    sessionStorage.clear();
+    localStorage.removeItem('user');
     window.location.href = '/';
   };
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Phone, Building2, Calendar, MapPin, Edit, Save, X, Trash2, AlertTriangle } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { formatDate, authUtils } from '@/lib/utils';
+import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import Breadcrumbs from '@/components/Breadcrumbs';
@@ -50,7 +50,7 @@ export default function ProfilePage() {
     address: '',
   });
 
-  const currentUser = authUtils.getUser();
+  const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -128,9 +128,9 @@ export default function ProfilePage() {
         setUser(response.user);
         setIsEditing(false);
         
-        // Update local storage if updating own profile
+        // Update session storage if updating own profile
         if (currentUser && currentUser._id === user._id) {
-          authUtils.setUser(response.user);
+          sessionStorage.setItem('user', JSON.stringify(response.user));
         }
       } else {
         toast.error(response.message || 'Failed to update profile');
@@ -152,7 +152,9 @@ export default function ProfilePage() {
       
       if (response.success) {
         toast.success('Account deleted successfully');
-        authUtils.logout();
+        // Clear all auth data
+        sessionStorage.clear();
+        localStorage.removeItem('user');
         router.push('/');
       } else {
         toast.error(response.message || 'Failed to delete account');
@@ -213,12 +215,12 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}
           <div className="mb-4 sm:mb-6 px-2 sm:px-1">
-            <Breadcrumbs
-              items={[
-                { name: 'Dashboard', href: '/dashboard' },
-                { name: 'Profile Not Found' }
-              ]}
-            />
+                      <Breadcrumbs
+            items={[
+              { name: 'Home', href: '/' },
+              { name: 'Profile Not Found' }
+            ]}
+          />
           </div>
           
           <div className="text-center">
@@ -244,7 +246,7 @@ export default function ProfilePage() {
         <div className="mb-4 sm:mb-6 px-2 sm:px-1">
           <Breadcrumbs
             items={[
-              { name: 'Dashboard', href: '/dashboard' },
+              { name: 'Home', href: '/' },
               { name: user?.name || 'User Profile' }
             ]}
           />

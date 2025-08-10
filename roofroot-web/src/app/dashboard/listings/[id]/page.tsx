@@ -19,7 +19,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { authUtils, formatPrice, formatDate, imageUtils } from '@/lib/utils';
+import { formatPrice, formatDate, imageUtils } from '@/lib/utils';
 import { handleListingError } from '@/lib/errorHandler';
 import Breadcrumbs from '@/components/Breadcrumbs';
 
@@ -33,7 +33,7 @@ export default function DashboardListingDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  const user = authUtils.getUser();
+  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
 
   useEffect(() => {
     // Redirect if not agency

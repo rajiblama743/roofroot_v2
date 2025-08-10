@@ -17,7 +17,7 @@ import {
   Share
 } from 'lucide-react';
 import { apiClient, Listing } from '@/lib/api';
-import { authUtils, formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
+import { formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
 import { handleListingError } from '@/lib/errorHandler';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -37,7 +37,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     // Check if user is agency
-    const user = authUtils.getUser();
+    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
     if (!user || user.role !== 'agency') {
       router.push('/login');
       return;
