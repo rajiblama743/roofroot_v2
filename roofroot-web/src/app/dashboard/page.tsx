@@ -23,9 +23,11 @@ import toast from 'react-hot-toast';
 import Link from 'next/link';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [listings, setListings] = useState<Listing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'sale' | 'lease'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -33,39 +35,63 @@ export default function DashboardPage() {
   const [maxPrice, setMaxPrice] = useState('');
   const [showShareModal, setShowShareModal] = useState(false);
   const [agencyName, setAgencyName] = useState<string>('');
-  const router = useRouter();
 
   useEffect(() => {
-    // Check if user is agency
-    const user = JSON.parse(sessionStorage.getItem('user') || 'null');
-    if (!user || user.role !== 'agency') {
-      router.push('/login');
-      return;
+    // Check if user is logged in
+    if (typeof window !== 'undefined') {
+      const userData = JSON.parse(sessionStorage.getItem('user') || 'null');
+      setUser(userData);
+      
+      if (!userData) {
+        router.push('/login');
+        return;
+      }
     }
+  }, [router]);
 
-    // Set agency name for sharing
-    setAgencyName(user.agencyName || user.name || '');
+  useEffect(() => {
+    const fetchListings = async () => {
+      try {
+        const response = await apiClient.getMyListings();
+        if (response.success) {
+          setListings(response.listings || []);
+        } else {
+          setError('Failed to load listings');
+        }
+      } catch (error: any) {
+        setError('Failed to load listings');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    fetchListings();
-  }, []);
+    if (user) {
+      fetchListings();
+    }
+  }, [user]);
 
-  const fetchListings = async () => {
+  const handleRefresh = async () => {
     try {
       setLoading(true);
       const response = await apiClient.getMyListings();
-      
       if (response.success) {
-        setListings(response.listings);
+        setListings(response.listings || []);
       } else {
         setError('Failed to load listings');
       }
-    } catch (err: any) {
-      handleListingError(err);
+    } catch (error: any) {
       setError('Failed to load listings');
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    // Set agency name for sharing
+    if (user) {
+      setAgencyName(user.agencyName || user.name || '');
+    }
+  }, [user]);
 
   const handleShare = () => {
     setShowShareModal(true);
@@ -304,7 +330,13 @@ export default function DashboardPage() {
           <div className="text-center py-8 sm:py-12">
             <p className="text-gray-500">{error}</p>
             <button
-              onClick={fetchListings}
+              onClick={() => {
+                if (user) {
+                  handleRefresh();
+                } else {
+                  router.push('/login');
+                }
+              }}
               className="mt-4 text-blue-600 hover:text-blue-700 font-medium"
             >
               Try again

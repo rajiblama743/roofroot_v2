@@ -349,8 +349,8 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
 // Search agencies by location (updated to filter by status)
 export const searchAgencies = async (req: Request, res: Response): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const search = req.query.search as string;
     const status = req.query.status as string || 'active'; // Default to active
 
@@ -372,24 +372,29 @@ export const searchAgencies = async (req: Request, res: Response): Promise<void>
     // Calculate skip value for pagination
     const skip = (page - 1) * limit;
 
-    // Execute query with pagination
+    // Execute query with pagination and performance optimizations
     const agencies = await User.find(query)
       .select('-password')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean(); // Use lean() for better performance
 
     // Get total count for pagination
     const total = await User.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
 
     res.status(200).json({
       success: true,
       message: 'Agencies retrieved successfully',
-      agencies,
+      items: agencies, // Consistent with pagination contract
+      agencies, // Keep for backward compatibility
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages,
+      hasMore
     });
   } catch (error) {
     console.error('Search agencies error:', error);

@@ -15,10 +15,10 @@ export default function LoginPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect if already authenticated
+    // Check if user is already authenticated
     if (authService.isAuthenticated()) {
-      console.log('Already authenticated, redirecting to dashboard');
-      router.push('/');
+      router.push('/dashboard');
+      return;
     }
   }, [router]);
 
@@ -27,29 +27,19 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      console.log('🔐 Login attempt with:', { email });
-      const response = await authService.login(email, password);
-      console.log('🔐 Login response:', response);
+      const response = await authService.login({ email, password });
       
-      toast.success('Login successful');
-      
-      // Check if user is admin
-      const currentUser = authService.getCurrentUser();
-      console.log('🔐 Current user after login:', currentUser);
-      
-      if (currentUser && currentUser.role === 'admin') {
-        console.log('🔐 User is admin, redirecting to dashboard');
-        // Force redirect to dashboard
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 100);
+      if (response.success && response.user) {
+        // Check if user is admin
+        if (response.user.role === 'admin') {
+          router.push('/dashboard');
+        } else {
+          toast.error('Access denied. Admin privileges required.');
+        }
       } else {
-        console.log('🔐 User is not admin, staying on login page');
-        toast.error('Access denied. Admin role required.');
-        authService.logout();
+        toast.error(response.message || 'Login failed');
       }
     } catch (error: any) {
-      console.error('🔐 Login error:', error);
       toast.error(error.message || 'Login failed');
     } finally {
       setIsLoading(false);

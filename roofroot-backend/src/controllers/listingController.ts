@@ -149,8 +149,9 @@ export const createListing = async (req: AuthenticatedListingRequest, res: Respo
 // Get all listings (public)
 export const getAllListings = async (req: Request, res: Response): Promise<void> => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    // Validate and sanitize pagination parameters
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const type = req.query.type as string;
     const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined;
     const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined;
@@ -165,8 +166,8 @@ export const getAllListings = async (req: Request, res: Response): Promise<void>
     
     if (minPrice !== undefined || maxPrice !== undefined) {
       query.price = {};
-      if (minPrice !== undefined) query.price.$gte = minPrice;
-      if (maxPrice !== undefined) query.price.$lte = maxPrice;
+      if (minPrice !== undefined && !isNaN(minPrice)) query.price.$gte = minPrice;
+      if (maxPrice !== undefined && !isNaN(maxPrice)) query.price.$lte = maxPrice;
     }
     
     if (search) {
@@ -176,24 +177,31 @@ export const getAllListings = async (req: Request, res: Response): Promise<void>
     // Calculate skip value for pagination
     const skip = (page - 1) * limit;
 
-    // Execute query with pagination
+    // Execute query with pagination and performance optimizations
     const listings = await Listing.find(query)
       .populate('createdBy', 'name email agencyName')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean(); // Use lean() for better performance when not modifying documents
 
     // Get total count for pagination
     const total = await Listing.countDocuments(query);
 
+    // Calculate pagination metadata
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
+
     res.status(200).json({
       success: true,
       message: 'Listings retrieved successfully',
-      listings,
+      items: listings, // Consistent with pagination contract
+      listings, // Keep for backward compatibility
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages,
+      hasMore
     });
   } catch (error) {
     console.error('Get all listings error:', error);
@@ -349,8 +357,8 @@ export const deleteListing = async (req: AuthenticatedListingRequest, res: Respo
 export const getMyListings = async (req: AuthenticatedListingRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!._id.toString();
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
 
     const skip = (page - 1) * limit;
 
@@ -358,18 +366,23 @@ export const getMyListings = async (req: AuthenticatedListingRequest, res: Respo
       .populate('createdBy', 'name email agencyName')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean(); // Use lean() for better performance
 
     const total = await Listing.countDocuments({ createdBy: userId });
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
 
     res.status(200).json({
       success: true,
       message: 'Your listings retrieved successfully',
-      listings,
+      items: listings, // Consistent with pagination contract
+      listings, // Keep for backward compatibility
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages,
+      hasMore
     });
   } catch (error) {
     console.error('Get my listings error:', error);
@@ -384,8 +397,8 @@ export const getMyListings = async (req: AuthenticatedListingRequest, res: Respo
 export const getListingsByAgency = async (req: Request, res: Response): Promise<void> => {
   try {
     const agencyName = decodeURIComponent(req.params.agencyName);
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 12;
+    const page = Math.max(1, parseInt(req.query.page as string) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 12));
 
     const skip = (page - 1) * limit;
 
@@ -404,12 +417,14 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
       res.status(200).json({
         success: true,
         message: 'Agency listings retrieved successfully',
-        listings: [],
+        items: [], // Consistent with pagination contract
+        listings: [], // Keep for backward compatibility
         agencyInfo: null,
         total: 0,
         page,
         limit,
-        totalPages: 0
+        totalPages: 0,
+        hasMore: false
       });
       return;
     }
@@ -425,10 +440,13 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
       .populate('createdBy', 'name email agencyName phoneNumber agencyDescription address')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean(); // Use lean() for better performance
 
     // Get total count for pagination
     const total = await Listing.countDocuments(query);
+    const totalPages = Math.ceil(total / limit);
+    const hasMore = page < totalPages;
 
     // Get agency info from the first matching user (even if no listings)
     let agencyInfo = null;
@@ -447,12 +465,14 @@ export const getListingsByAgency = async (req: Request, res: Response): Promise<
     res.status(200).json({
       success: true,
       message: 'Agency listings retrieved successfully',
-      listings,
+      items: listings, // Consistent with pagination contract
+      listings, // Keep for backward compatibility
       agencyInfo,
       total,
       page,
       limit,
-      totalPages: Math.ceil(total / limit)
+      totalPages,
+      hasMore
     });
   } catch (error) {
     console.error('Get listings by agency error:', error);

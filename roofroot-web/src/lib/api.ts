@@ -3,14 +3,6 @@ import axios from 'axios';
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'development' ? 'http://localhost:3001/api' : 'https://roofroot-v2.onrender.com/api');
 
-// Debug API configuration
-console.log('🔧 API Configuration:', {
-  NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
-  API_BASE_URL,
-  NODE_ENV: process.env.NODE_ENV,
-  isClient: typeof window !== 'undefined'
-});
-
 // Create axios instance
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -122,8 +114,6 @@ const retryRequest = async (
       
       // Calculate delay with exponential backoff
       const delay = baseDelay * Math.pow(2, attempt);
-      console.log(`Request failed, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})`);
-      
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -324,7 +314,7 @@ export const apiClient = {
   },
   
   // Agency Search
-  searchAgencies: async (params?: AgencySearchFilters) => {
+  searchAgencies: async (params?: AgencySearchFilters): Promise<PaginatedAgenciesResponse> => {
     return retryRequest(async () => {
       const response = await api.get(API_ENDPOINTS.SEARCH_AGENCIES, { params });
       return response.data;
@@ -332,7 +322,7 @@ export const apiClient = {
   },
   
   // Listings
-  getListings: async (params?: ListingFilters) => {
+  getListings: async (params?: ListingFilters): Promise<PaginatedListingsResponse> => {
     return retryRequest(async () => {
       const response = await api.get(API_ENDPOINTS.GET_LISTINGS, { params });
       return response.data;
@@ -478,6 +468,31 @@ export interface Agency {
   status: 'active' | 'pending';
   createdAt: string;
   updatedAt: string;
+}
+
+// Pagination response interfaces
+export interface PaginatedListingsResponse {
+  success: boolean;
+  message?: string;
+  items: Listing[];
+  listings?: Listing[]; // Backward compatibility
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
+export interface PaginatedAgenciesResponse {
+  success: boolean;
+  message?: string;
+  items: Agency[];
+  agencies?: Agency[]; // Backward compatibility
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
 }
 
 export interface ApiResponse<T = any> {

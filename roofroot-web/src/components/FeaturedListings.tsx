@@ -21,7 +21,7 @@ const FeaturedListings = () => {
         });
         
         if (response.success) {
-          setListings(response.listings);
+          setListings(response.listings || []);
         } else {
           setError('Failed to load featured listings');
         }

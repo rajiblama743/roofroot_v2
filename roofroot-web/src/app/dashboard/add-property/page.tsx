@@ -26,6 +26,7 @@ interface CreateListingForm {
 export default function AddPropertyPage() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   const {
     register,
@@ -47,16 +48,19 @@ export default function AddPropertyPage() {
     }
   });
 
-  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
-
   useEffect(() => {
     // Check if user is logged in and is an agency
-    if (!user || user.role !== 'agency') {
-      toast.error('Only agency accounts can create properties. Please contact admin to upgrade your account.');
-      router.push('/dashboard');
-      return;
+    if (typeof window !== 'undefined') {
+      const userData = JSON.parse(sessionStorage.getItem('user') || 'null');
+      setUser(userData);
+      
+      if (!userData || userData.role !== 'agency') {
+        toast.error('Only agency accounts can create properties. Please contact admin to upgrade your account.');
+        router.push('/dashboard');
+        return;
+      }
     }
-  }, [user, router]);
+  }, [router]);
 
   const onSubmit = async (data: CreateListingForm) => {
     setSubmitting(true);

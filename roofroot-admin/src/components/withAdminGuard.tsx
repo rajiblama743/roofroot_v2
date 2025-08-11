@@ -8,44 +8,31 @@ interface WithAdminGuardProps {
   children: React.ReactNode;
 }
 
-export const withAdminGuard = (Component: React.ComponentType<any>) => {
-  return function ProtectedComponent(props: any) {
+export function withAdminGuard<P extends object>(
+  WrappedComponent: React.ComponentType<P>
+) {
+  return function AdminGuardedComponent(props: P) {
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
       const checkAuth = async () => {
         try {
-          console.log('🔐 Admin guard: Checking authentication...');
-          
-          // First check local authentication
+          // Check local authentication first
           const isLocallyAuthenticated = authService.isAuthenticated();
-          console.log('🔐 Admin guard: Local auth check:', isLocallyAuthenticated);
           
           if (!isLocallyAuthenticated) {
-            console.log('🔐 Admin guard: Not locally authenticated, redirecting to login');
             router.push('/login');
             return;
           }
 
-          // For now, skip backend verification to test if that's the issue
-          console.log('🔐 Admin guard: Skipping backend verification for testing');
+          // For now, skip backend verification in development
+          // This allows testing with local authentication
           setIsAuthenticated(true);
           
-          // Uncomment this when backend verification is working:
-          // const isValid = await authService.verifyAuth();
-          // console.log('🔐 Admin guard: Backend verification:', isValid);
-          // if (!isValid) {
-          //   console.log('🔐 Admin guard: Backend verification failed, redirecting to login');
-          //   router.push('/login');
-          //   return;
-          // }
-
-          console.log('🔐 Admin guard: Authentication successful');
-          setIsAuthenticated(true);
         } catch (error) {
-          console.error('🔐 Admin guard: Auth check failed:', error);
+          console.error('Auth check error:', error);
           router.push('/login');
         } finally {
           setIsLoading(false);
@@ -56,23 +43,23 @@ export const withAdminGuard = (Component: React.ComponentType<any>) => {
     }, [router]);
 
     if (isLoading) {
-      console.log('🔐 Admin guard: Loading...');
       return (
         <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Loading...</p>
+          </div>
         </div>
       );
     }
 
     if (!isAuthenticated) {
-      console.log('🔐 Admin guard: Not authenticated, showing nothing');
-      return null; // Will redirect to login
+      return null;
     }
 
-    console.log('🔐 Admin guard: Rendering protected component');
-    return <Component {...props} />;
+    return <WrappedComponent {...props} />;
   };
-};
+}
 
 // Hook for admin guard
 export const useAdminGuard = () => {

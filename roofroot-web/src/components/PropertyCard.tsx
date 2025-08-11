@@ -1,9 +1,11 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { MapPin, DollarSign, Calendar, Building2 } from 'lucide-react';
 import { Listing } from '@/lib/api';
 import { formatPrice, formatDate, imageUtils, slugUtils } from '@/lib/utils';
+import { useState } from 'react';
 
 interface PropertyCardProps {
   listing: Listing;
@@ -12,6 +14,26 @@ interface PropertyCardProps {
 }
 
 export default function PropertyCard({ listing, viewMode, fromAgency }: PropertyCardProps) {
+  const [imageError, setImageError] = useState(false);
+  
+  // Get the image source with fallback
+  const getImageSrc = () => {
+    if (imageError || !listing.images || listing.images.length === 0) {
+      return imageUtils.getPlaceholderImage(400, 300);
+    }
+    return listing.images[0];
+  };
+
+  const handleImageError = () => {
+    console.warn(`Failed to load image for listing: ${listing.title}`);
+    setImageError(true);
+  };
+
+  // Get placeholder image for blur effect
+  const getBlurDataURL = () => {
+    return 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PC9zdmc+';
+  };
+
   if (viewMode === 'list') {
     return (
       <Link 
@@ -23,14 +45,17 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
       >
         <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
           <div className="flex flex-col sm:flex-row">
-            <div className="w-full sm:w-48 h-32 sm:h-32 flex-shrink-0">
-              <img
-                src={listing.images && listing.images.length > 0 
-                  ? listing.images[0] 
-                  : imageUtils.getPlaceholderImage(400, 300)
-                }
+            <div className="w-full sm:w-48 h-32 sm:h-32 flex-shrink-0 relative overflow-hidden">
+              <Image
+                src={getImageSrc()}
                 alt={listing.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, 192px"
+                loading="lazy"
+                onError={handleImageError}
+                placeholder="blur"
+                blurDataURL={getBlurDataURL()}
               />
             </div>
             <div className="flex-1 p-3 sm:p-4 lg:p-6">
@@ -106,13 +131,16 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         {/* Property Image */}
         <div className="relative h-32 sm:h-40 lg:h-48 overflow-hidden">
-          <img
-            src={listing.images && listing.images.length > 0 
-              ? listing.images[0] 
-              : imageUtils.getPlaceholderImage(400, 300)
-            }
+          <Image
+            src={getImageSrc()}
             alt={listing.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            loading="lazy"
+            onError={handleImageError}
+            placeholder="blur"
+            blurDataURL={getBlurDataURL()}
           />
           <div className="absolute top-2 sm:top-3 lg:top-4 left-2 sm:left-3 lg:left-4">
             <span className={`px-2 py-1 rounded-full text-xs font-semibold ${

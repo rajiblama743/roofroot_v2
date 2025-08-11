@@ -6,82 +6,64 @@ import {
   Search, 
   Filter, 
   Grid3X3, 
-  ChevronLeft, 
-  ChevronRight,
   Grid,
   List
 } from 'lucide-react';
 import { apiClient, Listing, ListingFilters } from '@/lib/api';
 import { formatPrice, formatDate, truncateText, imageUtils, paginationUtils } from '@/lib/utils';
-import PropertyCard from '@/components/PropertyCard';
+import LazyPropertyCard from '@/components/LazyPropertyCard';
+import ListingCardSkeleton from '@/components/ListingCardSkeleton';
 import SearchBar from '@/components/SearchBar';
+import { useInfiniteScrollFetch } from '@/hooks/useInfiniteScrollFetch';
 
 function PropertiesPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [listings, setListings] = useState<Listing[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<ListingFilters>({
-    page: 1,
-    limit: 12,
     search: searchParams.get('search') || '',
     type: (searchParams.get('type') as 'sale' | 'lease') || undefined,
     minPrice: searchParams.get('minPrice') ? parseInt(searchParams.get('minPrice')!) : undefined,
     maxPrice: searchParams.get('maxPrice') ? parseInt(searchParams.get('maxPrice')!) : undefined,
   });
-  const [pagination, setPagination] = useState({
-    total: 0,
-    page: 1,
-    limit: 12,
-    totalPages: 0,
+
+  // Infinite scroll hook for listings
+  const {
+    items: listings,
+    isLoading,
+    isError,
+    error,
+    hasMore,
+    total,
+    reset,
+    setFilters: setInfiniteScrollFilters,
+    sentinelRef,
+    page
+  } = useInfiniteScrollFetch<Listing>({
+    fetcher: async (page: number, filters: ListingFilters) => {
+      try {
+        const response = await apiClient.getListings({
+          ...filters,
+          page,
+          limit: 20
+        });
+        return response;
+      } catch (err) {
+        throw err;
+      }
+    },
+    filters,
+    deps: [filters.search, filters.type, filters.minPrice, filters.maxPrice],
+    enabled: true
   });
 
+  // Update infinite scroll filters when local filters change
   useEffect(() => {
-    fetchListings();
-  }, [filters]);
-
-  const fetchListings = async () => {
-    try {
-      setLoading(true);
-      const response = await apiClient.getListings(filters);
-      
-      if (response.success) {
-        setListings(response.listings);
-        setPagination({
-          total: response.total,
-          page: response.page,
-          limit: response.limit,
-          totalPages: response.totalPages,
-        });
-      } else {
-        setError('Failed to load properties');
-      }
-    } catch (err) {
-      console.error('Error fetching listings:', err);
-      setError('Failed to load properties');
-    } finally {
-      setLoading(false);
-    }
-  };
+    setInfiniteScrollFilters(filters);
+  }, [filters, setInfiniteScrollFilters]);
 
   const handleFilterChange = (newFilters: Partial<ListingFilters>) => {
-    const updatedFilters = { ...filters, ...newFilters, page: 1 };
-    setFilters(updatedFilters);
-    
-    // Update URL params
-    const params = new URLSearchParams();
-    Object.entries(updatedFilters).forEach(([key, value]) => {
-      if (value !== undefined && value !== '') {
-        params.append(key, value.toString());
-      }
-    });
-    router.push(`/properties?${params.toString()}`);
-  };
-
-  const handlePageChange = (page: number) => {
-    const updatedFilters = { ...filters, page };
+    const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     
     // Update URL params
@@ -95,12 +77,13 @@ function PropertiesPageContent() {
   };
 
   const clearFilters = () => {
-    const clearedFilters = { page: 1, limit: 12 };
+    const clearedFilters = {};
     setFilters(clearedFilters);
     router.push('/properties');
   };
 
-  if (loading && listings.length === 0) {
+  // Show loading skeleton on initial load
+  if (isLoading && listings.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -108,14 +91,7 @@ function PropertiesPageContent() {
             <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
-                  <div className="h-48 bg-gray-200"></div>
-                  <div className="p-6">
-                    <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
-                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
+                <ListingCardSkeleton key={i} viewMode={viewMode} />
               ))}
             </div>
           </div>
@@ -135,6 +111,17 @@ function PropertiesPageContent() {
           <p className="text-sm sm:text-base text-gray-600">
             Discover verified properties from trusted agencies
           </p>
+          
+          
+          {/* Manual refresh button */}
+          <button
+            onClick={() => {
+              reset();
+            }}
+            className="mt-2 px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
+          >
+            Manual Refresh
+          </button>
         </div>
 
         {/* Search and Filters */}
@@ -220,36 +207,51 @@ function PropertiesPageContent() {
         </div>
 
         {/* Results */}
-        {error ? (
+        {isError ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
             <p className="text-sm sm:text-base text-gray-500 mb-4">{error}</p>
             <button
-              onClick={fetchListings}
+              onClick={reset}
               className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
             >
               Try again
             </button>
           </div>
-        ) : listings.length === 0 ? (
+        ) : listings.length === 0 && !isLoading ? (
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-            <p className="text-sm sm:text-base text-gray-500 mb-4">No properties found matching your criteria.</p>
-            <button
-              onClick={clearFilters}
-              className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
-            >
-              Clear filters
-            </button>
+            <p className="text-sm sm:text-base text-gray-500 mb-4">
+              {isError ? 'Failed to load properties' : 'No properties found matching your criteria.'}
+            </p>
+            {!isError && (
+              <button
+                onClick={clearFilters}
+                className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+              >
+                Clear filters
+              </button>
+            )}
+            {isError && (
+              <button
+                onClick={reset}
+                className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+              >
+                Try again
+              </button>
+            )}
           </div>
         ) : (
           <>
             {/* Properties Grid/List */}
-            <div className={`grid gap-3 sm:gap-4 ${
-              viewMode === 'grid' 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                : 'grid-cols-1'
-            }`}>
+            <div 
+              className={`grid gap-3 sm:gap-4 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-1'
+              }`}
+              aria-busy={isLoading}
+            >
               {listings.map((listing) => (
-                <PropertyCard 
+                <LazyPropertyCard 
                   key={listing.id} 
                   listing={listing} 
                   viewMode={viewMode}
@@ -257,45 +259,35 @@ function PropertiesPageContent() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {pagination.totalPages > 1 && (
-              <div className="mt-6 sm:mt-8 flex items-center justify-center">
-                <nav className="flex items-center space-x-1 sm:space-x-2">
-                  <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page <= 1}
-                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </button>
-
-                  {paginationUtils.generatePageNumbers(
-                    pagination.page, 
-                    pagination.totalPages
-                  ).map((pageNum) => (
-                    <button
-                      key={pageNum}
-                      onClick={() => typeof pageNum === 'number' ? handlePageChange(pageNum) : undefined}
-                      className={`px-3 py-2 rounded-md text-sm font-medium ${
-                        pageNum === pagination.page
-                          ? 'bg-blue-600 text-white'
-                          : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page >= pagination.totalPages}
-                    className="p-2 rounded-md border border-gray-300 text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </nav>
+            {/* Loading More Skeleton */}
+            {isLoading && listings.length > 0 && (
+              <div className={`grid gap-3 sm:gap-4 mt-4 ${
+                viewMode === 'grid' 
+                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-1'
+              }`}>
+                {[1, 2, 3, 4].map((i) => (
+                  <ListingCardSkeleton key={`loading-${i}`} viewMode={viewMode} />
+                ))}
               </div>
             )}
+
+            {/* End of List Message */}
+            {!hasMore && listings.length > 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500 text-sm">
+                  {total > 0 ? `Showing all ${total} properties` : 'No more properties to load'}
+                </p>
+              </div>
+            )}
+
+            {/* Load More Sentinel */}
+            <div 
+              ref={sentinelRef}
+              id="load-more-sentinel"
+              className="h-4 w-full"
+              aria-hidden="true"
+            />
           </>
         )}
       </div>
@@ -309,4 +301,4 @@ export default function PropertiesPage() {
       <PropertiesPageContent />
     </Suspense>
   );
-} 
+}

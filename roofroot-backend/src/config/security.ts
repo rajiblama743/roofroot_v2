@@ -30,7 +30,7 @@ export const securityConfig = {
   // Rate limiting
   rateLimit: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
+    max: process.env.NODE_ENV === 'development' ? 5000 : 100, // 5000 for dev, 100 for production
     message: {
       success: false,
       message: 'Too many requests from this IP, please try again later.'
@@ -38,15 +38,76 @@ export const securityConfig = {
     standardHeaders: true,
     legacyHeaders: false,
     // Skip rate limiting for health checks
-    skip: (req: any) => req.path === '/api/health'
+    skip: (req: any) => req.path === '/api/health',
+    // Development-friendly options
+    ...(process.env.NODE_ENV === 'development' && {
+      // More lenient for development
+      skipSuccessfulRequests: false,
+      skipFailedRequests: false,
+      // Add delay instead of blocking for development
+      delayMs: 0,
+      // Allow burst requests in development
+      maxDelayMs: 1000,
+      // Better error messages for development
+      message: {
+        success: false,
+        message: 'Rate limit exceeded (development: 5000 req/15min). This is very generous for local development.',
+        retryAfter: '15 minutes',
+        currentLimit: 5000,
+        windowMs: '15 minutes'
+      }
+    })
   },
+
+  // Specific rate limiting for different endpoints (development only)
+  endpointRateLimits: process.env.NODE_ENV === 'development' ? {
+    // Very generous for development
+    listings: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 10000, // 10000 requests per 15 minutes for listings
+      message: {
+        success: false,
+        message: 'Too many listing requests (dev: 10000 req/15min). This is very generous for local development.',
+        retryAfter: '15 minutes',
+        currentLimit: 10000,
+        windowMs: '15 minutes'
+      },
+      standardHeaders: true,
+      legacyHeaders: false
+    },
+    agencies: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 10000, // 10000 requests per 15 minutes for agencies
+      message: {
+        success: false,
+        message: 'Too many agency requests (dev: 10000 req/15min). This is very generous for local development.',
+        retryAfter: '15 minutes',
+        currentLimit: 10000,
+        windowMs: '15 minutes'
+      },
+      standardHeaders: true,
+      legacyHeaders: false
+    },
+    auth: {
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 1000, // 1000 auth requests per 15 minutes (more restrictive for security)
+      message: {
+        success: false,
+        message: 'Too many authentication requests (dev: 1000 req/15min). This is more restrictive for security.',
+        retryAfter: '15 minutes',
+        currentLimit: 1000,
+        windowMs: '15 minutes'
+      },
+      standardHeaders: true,
+      legacyHeaders: false
+    }
+  } : undefined,
 
   // CORS configuration
   cors: {
     origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (like mobile apps or Postman)
       if (!origin) {
-        console.log('✅ CORS: Allowing request with no origin');
         return callback(null, true);
       }
       
@@ -79,20 +140,14 @@ export const securityConfig = {
         ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
       ].filter(Boolean); // Remove undefined values
       
-      console.log(`🌐 CORS: Request from origin: ${origin}`);
-      console.log(`🌐 CORS: Allowed origins:`, allowedOrigins);
-      
       // More permissive CORS for production - allow any Vercel domain
       if (origin.includes('vercel.app') || origin.includes('vercel.com')) {
-        console.log('✅ CORS: Allowing Vercel domain');
         return callback(null, true);
       }
       
       if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
-        console.log('✅ CORS: Origin allowed');
         callback(null, true);
       } else {
-        console.warn(`❌ CORS: Origin blocked: ${origin}`);
         callback(new Error('Not allowed by CORS'));
       }
     },
@@ -212,5 +267,4 @@ export const securityUtils = {
 // Initialize security configuration
 export const initializeSecurity = () => {
   securityUtils.validateJWTSecrets();
-  console.log('✅ Security configuration validated');
 };

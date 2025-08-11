@@ -52,32 +52,12 @@ export default function PropertyDetailPage() {
   useEffect(() => {
     const fetchListing = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        
-        console.log('Fetching listing with ID:', params.id);
         const response = await apiClient.getListing(params.id as string);
-        
-        console.log('API Response:', response);
-        
-        if (response.success && response.listing) {
-          setListing(response.listing);
-        } else {
-          console.error('API returned error:', response);
-          setError(response.message || 'Failed to load property details');
-        }
-      } catch (err: any) {
-        console.error('Error fetching listing:', err);
-        
-        // Handle specific error cases
-        if (err.response?.status === 404) {
-          setError('Property not found. The listing may have been removed or does not exist.');
-        } else if (err.response?.status === 500) {
-          setError('Server error. Please try again later.');
-        } else {
-          setError('Failed to load property details. Please check your connection and try again.');
-        }
-      } finally {
+        setListing(response.listing);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching listing:', error);
+        setError('Failed to load listing');
         setLoading(false);
       }
     };

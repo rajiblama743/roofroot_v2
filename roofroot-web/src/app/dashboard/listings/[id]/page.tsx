@@ -32,16 +32,20 @@ export default function DashboardListingDetailPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    // Redirect if not agency
-    if (user?.role !== 'agency') {
-      router.push('/login');
-      return;
+    // Check if user is logged in
+    if (typeof window !== 'undefined') {
+      const userData = JSON.parse(sessionStorage.getItem('user') || 'null');
+      setUser(userData);
+      
+      if (!userData) {
+        router.push('/login');
+        return;
+      }
     }
-  }, [router, user]);
+  }, [router]);
 
   useEffect(() => {
     const fetchListing = async () => {

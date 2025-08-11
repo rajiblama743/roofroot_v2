@@ -37,8 +37,24 @@ app.use(helmet({
 // CORS configuration with enhanced security
 app.use(cors(securityConfig.cors));
 
-// Rate limiting
-app.use(rateLimit(securityConfig.rateLimit));
+// Rate limiting - use endpoint-specific limits for development
+if (process.env.NODE_ENV === 'development' && securityConfig.endpointRateLimits) {
+  // Development: Use endpoint-specific rate limits
+  
+  // General rate limit (fallback)
+  app.use(rateLimit({
+    ...securityConfig.rateLimit,
+    max: 500 // Lower general limit since we have specific ones
+  }));
+  
+  // Endpoint-specific rate limits
+  app.use('/api/listings', rateLimit(securityConfig.endpointRateLimits.listings));
+  app.use('/api/users/search/agencies', rateLimit(securityConfig.endpointRateLimits.agencies));
+  app.use('/api/auth', rateLimit(securityConfig.endpointRateLimits.auth));
+} else {
+  // Production: Use general rate limiting
+  app.use(rateLimit(securityConfig.rateLimit));
+}
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
@@ -46,13 +62,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.status(200).json({
+  const healthData: any = {
     success: true,
     message: 'Server is healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     environment: process.env.NODE_ENV || 'development'
-  });
+  };
+
+  res.status(200).json(healthData);
 });
 
 // Root endpoint

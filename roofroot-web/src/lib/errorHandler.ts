@@ -89,15 +89,17 @@ export class ErrorHandler {
       return;
     }
     
-    // Log detailed error information for debugging
-    console.error('=== ERROR DEBUGGING ===');
-    console.error('Error object:', error);
-    console.error('Error status:', error.response?.status);
-    console.error('Error response data:', error.response?.data);
-    console.error('Error message:', error.message);
-    console.error('Error stack:', error.stack);
-    console.error('Network status:', navigator.onLine ? 'Online' : 'Offline');
-    console.error('========================');
+    // Log error for debugging (in development)
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: (error as any).name,
+        code: (error as any).code,
+        status: (error as any).response?.status,
+        data: (error as any).response?.data
+      });
+    }
 
     const status = error.response?.status;
     const errorData = error.response?.data;

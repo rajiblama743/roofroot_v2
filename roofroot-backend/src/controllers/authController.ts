@@ -3,6 +3,8 @@ import { body, validationResult } from 'express-validator';
 import User, { IUser } from '../models/User';
 import { RegisterRequest, LoginRequest, AuthResponse, JWTPayload, AuthenticatedRequest } from '../types/user';
 import { generateAccessToken } from '../middlewares/authMiddleware';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 // Validation rules for registration
 export const validateRegistration = [
@@ -130,12 +132,9 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 // Login endpoint
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
-    console.log('🔐 Login attempt:', { email: req.body.email, timestamp: new Date().toISOString() });
-    
     // Check for validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      console.log('❌ Login validation failed:', errors.array());
       res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -144,68 +143,78 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const { email, password }: LoginRequest = req.body;
+    const { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
-      console.log('❌ Login failed: User not found for email:', email);
       res.status(401).json({
         success: false,
-        message: 'Email not found. Please check your email address or register a new account.'
+        message: 'Invalid email or password'
       });
       return;
     }
 
-    console.log('✅ User found:', { userId: user._id, role: user.role, status: user.status, email: user.email });
-
-    // Check password
-    const isPasswordValid = await user.comparePassword(password);
-    if (!isPasswordValid) {
-      console.log('❌ Login failed: Invalid password for user:', email);
-      res.status(401).json({
-        success: false,
-        message: 'Incorrect password. Please check your password and try again.'
-      });
-      return;
-    }
-
-    console.log('✅ Password validated for user:', email);
-
-    // Check user status for agencies
-    if (user.role === 'agency' && user.status === 'pending') {
-      console.log('❌ Login failed: Agency account is pending approval:', email);
+    // Check if user account is active
+    if (user.status !== 'active') {
       res.status(403).json({
         success: false,
-        message: 'Your account is pending approval.'
+        message: 'Account is not active. Please contact support.'
+      });
+      return;
+    }
+
+    // Check if agency account is pending approval (this check is redundant since we already checked status !== 'active')
+    // if (user.role === 'agency' && user.status === 'pending') {
+    //   res.status(403).json({
+    //     success: false,
+    //     message: 'Your agency account is pending approval. Please wait for admin approval.'
+    //   });
+    //   return;
+    // }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      res.status(401).json({
+        success: false,
+        message: 'Invalid email or password'
       });
       return;
     }
 
     // Generate JWT token
-    const payload: JWTPayload = {
-      userId: (user as any)._id.toString(),
-      email: user.email,
-      role: user.role
-    };
+    const token = jwt.sign(
+      { 
+        userId: user._id, 
+        email: user.email, 
+        role: user.role,
+        status: user.status
+      },
+      process.env.JWT_SECRET!,
+      { expiresIn: '24h' }
+    );
 
-    const token = generateAccessToken(payload);
-    console.log('✅ JWT token generated for user:', { userId: user._id, role: user.role });
-
-    // Return user data without password
-    const userResponse = user.toObject();
-    delete (userResponse as any).password;
-
-    console.log('✅ Login successful for user:', { userId: user._id, role: user.role, email: user.email });
-
+    // Return success response with token and user data
     res.status(200).json({
       success: true,
       message: 'Login successful',
       token,
-      user: userResponse
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        status: user.status,
+        agencyName: user.agencyName,
+        agencyDescription: user.agencyDescription,
+        phoneNumber: user.phoneNumber,
+        address: user.address,
+        license: user.license
+      }
     });
   } catch (error) {
-    console.error('❌ Login error:', error);
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
       message: 'Internal server error during login'

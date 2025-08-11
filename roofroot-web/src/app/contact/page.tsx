@@ -26,7 +26,6 @@ export default function ContactPage() {
     try {
       setLoading(true);
       // Simulate form submission
-      console.log('Contact form submitted:', data);
       toast.success('Thank you for your message! We will get back to you soon.');
       reset();
     } catch (error) {

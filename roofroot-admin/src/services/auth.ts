@@ -76,28 +76,16 @@ export const authService = {
     return localStorage.getItem('adminToken');
   },
 
-  // Verify token and role with backend (simplified since no /auth/me endpoint)
+  // Verify authentication with backend
   verifyAuth: async (): Promise<boolean> => {
     try {
       const token = authService.getToken();
       if (!token) return false;
 
-      // For now, just check if we have a valid token and admin user locally
-      // In a real app, you'd verify with the backend
-      const user = authService.getCurrentUser();
-      const isValid = !!(token && user && user.role === 'admin');
-      
-      console.log('🔐 Auth verification:', { 
-        hasToken: !!token, 
-        hasUser: !!user, 
-        userRole: user?.role, 
-        isValid 
-      });
-      
-      return isValid;
+      const response = await api.get('/auth/verify');
+      return response.data.success;
     } catch (error) {
-      console.error('🔐 Auth verification error:', error);
-      authService.logout();
+      console.error('Auth verification failed:', error);
       return false;
     }
   },
