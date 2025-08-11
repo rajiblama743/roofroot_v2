@@ -111,17 +111,6 @@ function PropertiesPageContent() {
           <p className="text-sm sm:text-base text-gray-600">
             Discover verified properties from trusted agencies
           </p>
-          
-          
-          {/* Manual refresh button */}
-          <button
-            onClick={() => {
-              reset();
-            }}
-            className="mt-2 px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700"
-          >
-            Manual Refresh
-          </button>
         </div>
 
         {/* Search and Filters */}
