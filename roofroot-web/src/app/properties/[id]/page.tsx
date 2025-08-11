@@ -17,19 +17,19 @@ export default function PropertyDetailPage() {
   const [listing, setListing] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-  const user = JSON.parse(sessionStorage.getItem('user') || 'null');
+  const [user, setUser] = useState<any>(null);
   const [isFromDashboard, setIsFromDashboard] = useState(false);
   const [isFromAgency, setIsFromAgency] = useState(false);
   const [agencyName, setAgencyName] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check if user came from dashboard
-    const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
-    setIsFromDashboard(currentUser?.role === 'agency');
-    
-    // Check if we came from an agency page
+    // Check if user came from dashboard - only on client side
     if (typeof window !== 'undefined') {
+      const currentUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+      setUser(currentUser);
+      setIsFromDashboard(currentUser?.role === 'agency');
+      
+      // Check if we came from an agency page
       const referrer = document.referrer;
       const urlParams = new URLSearchParams(window.location.search);
       const fromAgency = urlParams.get('fromAgency');
@@ -53,7 +53,11 @@ export default function PropertyDetailPage() {
     const fetchListing = async () => {
       try {
         const response = await apiClient.getListing(params.id as string);
-        setListing(response.listing);
+        if (response.success && response.listing) {
+          setListing(response.listing);
+        } else {
+          setError('Failed to load listing');
+        }
         setLoading(false);
       } catch (error) {
         console.error('Error fetching listing:', error);

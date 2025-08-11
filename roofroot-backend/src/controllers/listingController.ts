@@ -182,8 +182,7 @@ export const getAllListings = async (req: Request, res: Response): Promise<void>
       .populate('createdBy', 'name email agencyName')
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit)
-      .lean(); // Use lean() for better performance when not modifying documents
+      .limit(limit);
 
     // Get total count for pagination
     const total = await Listing.countDocuments(query);
