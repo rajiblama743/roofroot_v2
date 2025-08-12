@@ -19,16 +19,20 @@ export interface UseInfiniteScrollFetchOptions<T> {
   filters?: any;
   deps?: any[];
   enabled?: boolean;
+  keepPreviousData?: boolean; // New option to keep previous data during filter changes
 }
 
 export interface UseInfiniteScrollFetchReturn<T> {
   items: T[];
   page: number;
   isLoading: boolean;
+  isInitialLoading: boolean; // New: true only for first page request
+  isFetchingMore: boolean; // New: true when loading additional pages
   isError: boolean;
   error: string | null;
   hasMore: boolean;
   total: number;
+  hasFetchedOnce: boolean; // New: true after first response (success or error)
   loadMore: () => void;
   reset: () => void;
   refresh: () => void;
@@ -42,19 +46,24 @@ export function useInfiniteScrollFetch<T>({
   limit = 20,
   filters = {},
   deps = [],
-  enabled = true
+  enabled = true,
+  keepPreviousData = false
 }: UseInfiniteScrollFetchOptions<T>): UseInfiniteScrollFetchReturn<T> {
   const [items, setItems] = useState<T[]>([]);
   const [page, setPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(false); // New state
+  const [isFetchingMore, setIsFetchingMore] = useState(false); // New state
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false); // New state
   
   const sentinelRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isLoadingRef = useRef(false);
+  const isInitialLoadRef = useRef(false); // Track if this is the first load
 
   // Memoize filters to prevent unnecessary re-renders
   const memoizedFilters = useMemo(() => filters, deps);
@@ -64,10 +73,14 @@ export function useInfiniteScrollFetch<T>({
     setItems([]);
     setPage(initialPage);
     setIsLoading(false);
+    setIsInitialLoading(false);
+    setIsFetchingMore(false);
     setIsError(false);
     setError(null);
     setHasMore(true);
     setTotal(0);
+    setHasFetchedOnce(false);
+    isInitialLoadRef.current = false;
     
     // Cancel any ongoing request
     if (abortControllerRef.current) {
@@ -92,7 +105,16 @@ export function useInfiniteScrollFetch<T>({
 
     try {
       isLoadingRef.current = true;
-      setIsLoading(true);
+      const isFirstPage = page === initialPage;
+      
+      // Set appropriate loading states
+      if (isFirstPage) {
+        setIsInitialLoading(true);
+        setIsLoading(true);
+      } else {
+        setIsFetchingMore(true);
+      }
+      
       setIsError(false);
       setError(null);
 
@@ -126,6 +148,11 @@ export function useInfiniteScrollFetch<T>({
         setHasMore(response.hasMore);
         setTotal(response.total);
         setPage(prevPage => prevPage + 1);
+        
+        // Mark that we've fetched at least once
+        if (!hasFetchedOnce) {
+          setHasFetchedOnce(true);
+        }
       } else {
         throw new Error('Invalid response format or no items returned');
       }
@@ -136,11 +163,18 @@ export function useInfiniteScrollFetch<T>({
       console.error('Error loading more items:', err);
       setIsError(true);
       setError(err.message || 'Failed to load more items');
+      
+      // Mark that we've fetched at least once (even on error)
+      if (!hasFetchedOnce) {
+        setHasFetchedOnce(true);
+      }
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
+      setIsInitialLoading(false);
+      setIsFetchingMore(false);
     }
-  }, [fetcher, page, memoizedFilters, hasMore, enabled, initialPage]);
+  }, [fetcher, page, memoizedFilters, hasMore, enabled, initialPage, hasFetchedOnce]);
 
   // Refresh function to reload current data
   const refresh = useCallback(async () => {
@@ -158,7 +192,7 @@ export function useInfiniteScrollFetch<T>({
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting && hasMore && !isLoading) {
+        if (entry.isIntersecting && hasMore && !isLoading && !isInitialLoading) {
           loadMore();
         }
       },
@@ -173,14 +207,15 @@ export function useInfiniteScrollFetch<T>({
     return () => {
       observer.disconnect();
     };
-  }, [hasMore, isLoading, loadMore, enabled]);
+  }, [hasMore, isLoading, isInitialLoading, loadMore, enabled]);
 
   // Initial load - only one effect for this
   useEffect(() => {
-    if (enabled && page === initialPage && items.length === 0 && !isLoading) {
+    if (enabled && page === initialPage && items.length === 0 && !isLoading && !isInitialLoading) {
+      isInitialLoadRef.current = true;
       loadMore();
     }
-  }, [enabled, initialPage, items.length, isLoading, loadMore]);
+  }, [enabled, initialPage, items.length, isLoading, isInitialLoading, loadMore]);
 
   // Cleanup on unmount or when dependencies change
   useEffect(() => {
@@ -200,10 +235,13 @@ export function useInfiniteScrollFetch<T>({
     items,
     page,
     isLoading,
+    isInitialLoading,
+    isFetchingMore,
     isError,
     error,
     hasMore,
     total,
+    hasFetchedOnce,
     loadMore,
     reset,
     refresh,

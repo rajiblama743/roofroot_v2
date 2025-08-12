@@ -20,10 +20,13 @@ function FindAgencyContent() {
   const {
     items: agencies,
     isLoading,
+    isInitialLoading,
+    isFetchingMore,
     isError,
     error,
     hasMore,
     total,
+    hasFetchedOnce,
     reset,
     setFilters: setInfiniteScrollFilters,
     sentinelRef
@@ -56,8 +59,9 @@ function FindAgencyContent() {
     router.push(`/agency/${slugUtils.generateSlug(agencyName)}?from=find-agency`);
   };
 
-  // Show loading skeleton on initial load
-  if (isLoading && agencies.length === 0) {
+  // Conditional rendering based on state flags
+  // 1. Show skeletons on initial loading (NO empty copy)
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
@@ -120,8 +124,27 @@ function FindAgencyContent() {
           </div>
         )}
 
+        {/* Loading Indicator */}
+        {isInitialLoading && (
+          // Show subtle loading indicator during search changes
+          <div className="mb-6">
+            {/* Loading bar */}
+            <div className="w-full bg-gray-200 rounded-full h-1 mb-4">
+              <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+            </div>
+            {/* Loading text */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <span>Searching agencies...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Results */}
         {agencies.length > 0 ? (
+          // 4. Show list + sentinel for lazy loading
           <>
             <div className="mb-6">
               <p className="text-gray-600">
@@ -143,8 +166,8 @@ function FindAgencyContent() {
               ))}
             </div>
 
-            {/* Loading More Skeleton */}
-            {isLoading && agencies.length > 0 && (
+            {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
+            {isFetchingMore && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
                 {[1, 2, 3, 4].map((i) => (
                   <AgencyCardSkeleton key={`loading-${i}`} />
@@ -169,7 +192,8 @@ function FindAgencyContent() {
               aria-hidden="true"
             />
           </>
-        ) : !isLoading && (
+        ) : hasFetchedOnce ? (
+          // 3. Only show empty state AFTER first fetch completes AND there are truly no results
           <div className="text-center py-12">
             <Image 
               src="/roofchains-logo.png" 
@@ -183,7 +207,7 @@ function FindAgencyContent() {
               {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new agencies.'}
             </p>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

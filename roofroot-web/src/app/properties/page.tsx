@@ -31,10 +31,13 @@ function PropertiesPageContent() {
   const {
     items: listings,
     isLoading,
+    isInitialLoading,
+    isFetchingMore,
     isError,
     error,
     hasMore,
     total,
+    hasFetchedOnce,
     reset,
     setFilters: setInfiniteScrollFilters,
     sentinelRef,
@@ -82,8 +85,9 @@ function PropertiesPageContent() {
     router.push('/properties');
   };
 
-  // Show loading skeleton on initial load
-  if (isLoading && listings.length === 0) {
+  // Conditional rendering based on state flags
+  // 1. Show skeletons on initial loading (NO empty copy)
+  if (isInitialLoading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,7 +200,25 @@ function PropertiesPageContent() {
         </div>
 
         {/* Results */}
+        {isInitialLoading && (
+          // Show subtle loading indicator during filter changes
+          <div className="mb-4">
+            {/* Loading bar */}
+            <div className="w-full bg-gray-200 rounded-full h-1 mb-4">
+              <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '100%' }}></div>
+            </div>
+            {/* Loading text */}
+            <div className="flex items-center justify-center">
+              <div className="flex items-center space-x-2 text-sm text-gray-500">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                <span>Loading properties...</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isError ? (
+          // 2. Show error UI
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
             <p className="text-sm sm:text-base text-gray-500 mb-4">{error}</p>
             <button
@@ -206,29 +228,21 @@ function PropertiesPageContent() {
               Try again
             </button>
           </div>
-        ) : listings.length === 0 && !isLoading ? (
+        ) : listings.length === 0 && hasFetchedOnce ? (
+          // 3. Only show empty state AFTER first fetch completes AND there are truly no results
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
             <p className="text-sm sm:text-base text-gray-500 mb-4">
-              {isError ? 'Failed to load properties' : 'No properties found matching your criteria.'}
+              No properties found matching your criteria.
             </p>
-            {!isError && (
-              <button
-                onClick={clearFilters}
-                className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
-              >
-                Clear filters
-              </button>
-            )}
-            {isError && (
-              <button
-                onClick={reset}
-                className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
-              >
-                Try again
-              </button>
-            )}
+            <button
+              onClick={clearFilters}
+              className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+            >
+              Clear filters
+            </button>
           </div>
         ) : (
+          // 4. Show list + sentinel for lazy loading
           <>
             {/* Properties Grid/List */}
             <div 
@@ -248,8 +262,8 @@ function PropertiesPageContent() {
               ))}
             </div>
 
-            {/* Loading More Skeleton */}
-            {isLoading && listings.length > 0 && (
+            {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
+            {isFetchingMore && (
               <div className={`grid gap-3 sm:gap-4 mt-4 ${
                 viewMode === 'grid' 
                   ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
