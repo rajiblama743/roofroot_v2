@@ -11,10 +11,9 @@ import { useInfiniteScrollFetch } from '@/hooks/useInfiniteScrollFetch';
 import AgencyCardSkeleton from '@/components/AgencyCardSkeleton';
 import LazyAgencyCard from '@/components/LazyAgencyCard';
 
-function FindAgencyContent() {
-  const searchParams = useSearchParams();
+// Separate component for the agencies list to enable Suspense
+function AgenciesList({ searchTerm }: { searchTerm: string }) {
   const router = useRouter();
-  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
 
   // Infinite scroll hook for agencies
   const {
@@ -48,35 +47,118 @@ function FindAgencyContent() {
     enabled: true
   });
 
+  const handleAgencyClick = (agencyName: string) => {
+    router.push(`/agency/${slugUtils.generateSlug(agencyName)}?from=find-agency`);
+  };
+
+  // Show skeletons during initial loading
+  if (isInitialLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <AgencyCardSkeleton key={i} />
+        ))}
+      </div>
+    );
+  }
+
+  // Show error UI
+  if (isError) {
+    return (
+      <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+        <p className="text-red-600">{error}</p>
+        <button
+          onClick={reset}
+          className="mt-2 text-sm text-red-600 hover:text-red-700 underline"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // Show empty state only after first fetch completes and there are truly no results
+  if (agencies.length === 0 && hasFetchedOnce) {
+    return (
+      <div className="text-center py-12">
+        <Image 
+          src="/roofchains-logo.png" 
+          alt="RoofChains Logo" 
+          width={64} 
+          height={64} 
+          className="w-16 h-16 mx-auto mb-4 opacity-40"
+        />
+        <h3 className="text-lg font-medium text-gray-900 mb-2">No agencies found</h3>
+        <p className="text-gray-600">
+          {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new agencies.'}
+        </p>
+      </div>
+    );
+  }
+
+  // Show agencies list
+  return (
+    <>
+      <div className="mb-6">
+        <p className="text-gray-600">
+          Found {total} agency{total !== 1 ? 'ies' : ''}
+        </p>
+      </div>
+
+      {/* Agency Grid */}
+      <div 
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
+        aria-busy={isLoading}
+      >
+        {agencies.map((agency) => (
+          <LazyAgencyCard 
+            key={agency._id}
+            agency={agency}
+            onClick={() => handleAgencyClick(agency.agencyName || agency.name || '')}
+          />
+        ))}
+      </div>
+
+      {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
+      {isFetchingMore && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+          {[1, 2, 3, 4].map((i) => (
+            <AgencyCardSkeleton key={`loading-${i}`} />
+          ))}
+        </div>
+      )}
+
+      {/* End of List Message */}
+      {!hasMore && agencies.length > 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm">
+            {total > 0 ? `Showing all ${total} agencies` : 'No more agencies to load'}
+          </p>
+        </div>
+      )}
+
+      {/* Load More Sentinel */}
+      <div 
+        ref={sentinelRef}
+        id="load-more-sentinel"
+        className="h-4 w-full"
+        aria-hidden="true"
+      />
+    </>
+  );
+}
+
+function FindAgencyContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
       router.push(`/find-agency?search=${encodeURIComponent(searchTerm.trim())}`);
     }
   };
-
-  const handleAgencyClick = (agencyName: string) => {
-    router.push(`/agency/${slugUtils.generateSlug(agencyName)}?from=find-agency`);
-  };
-
-  // Conditional rendering based on state flags
-  // 1. Show skeletons on initial loading (NO empty copy)
-  if (isInitialLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <AgencyCardSkeleton key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
@@ -111,125 +193,21 @@ function FindAgencyContent() {
           </div>
         </form>
 
-        {/* Error Message */}
-        {isError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-600">{error}</p>
-            <button
-              onClick={reset}
-              className="mt-2 text-sm text-red-600 hover:text-red-700 underline"
-            >
-              Try again
-            </button>
+        {/* Agencies List with Suspense */}
+        <Suspense fallback={
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <AgencyCardSkeleton key={i} />
+            ))}
           </div>
-        )}
-
-        {/* Loading Indicator */}
-        {isInitialLoading && (
-          // Show subtle loading indicator during search changes
-          <div className="mb-6">
-            {/* Loading bar */}
-            <div className="w-full bg-gray-200 rounded-full h-1 mb-4">
-              <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '100%' }}></div>
-            </div>
-            {/* Loading text */}
-            <div className="flex items-center justify-center">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                <span>Searching agencies...</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Results */}
-        {agencies.length > 0 ? (
-          // 4. Show list + sentinel for lazy loading
-          <>
-            <div className="mb-6">
-              <p className="text-gray-600">
-                Found {total} agency{total !== 1 ? 'ies' : ''}
-              </p>
-            </div>
-
-            {/* Agency Grid */}
-            <div 
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
-              aria-busy={isLoading}
-            >
-              {agencies.map((agency) => (
-                <LazyAgencyCard 
-                  key={agency._id}
-                  agency={agency}
-                  onClick={() => handleAgencyClick(agency.agencyName || agency.name || '')}
-                />
-              ))}
-            </div>
-
-            {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
-            {isFetchingMore && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                {[1, 2, 3, 4].map((i) => (
-                  <AgencyCardSkeleton key={`loading-${i}`} />
-                ))}
-              </div>
-            )}
-
-            {/* End of List Message */}
-            {!hasMore && agencies.length > 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500 text-sm">
-                  {total > 0 ? `Showing all ${total} agencies` : 'No more agencies to load'}
-                </p>
-              </div>
-            )}
-
-            {/* Load More Sentinel */}
-            <div 
-              ref={sentinelRef}
-              id="load-more-sentinel"
-              className="h-4 w-full"
-              aria-hidden="true"
-            />
-          </>
-        ) : hasFetchedOnce ? (
-          // 3. Only show empty state AFTER first fetch completes AND there are truly no results
-          <div className="text-center py-12">
-            <Image 
-              src="/roofchains-logo.png" 
-              alt="RoofChains Logo" 
-              width={64} 
-              height={64} 
-              className="w-16 h-16 mx-auto mb-4 opacity-40"
-            />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No agencies found</h3>
-            <p className="text-gray-600">
-              {searchTerm ? 'Try adjusting your search terms.' : 'Check back later for new agencies.'}
-            </p>
-          </div>
-        ) : null}
+        }>
+          <AgenciesList searchTerm={searchTerm} />
+        </Suspense>
       </div>
     </div>
   );
 }
 
 export default function FindAgencyPage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <AgencyCardSkeleton key={i} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    }>
-      <FindAgencyContent />
-    </Suspense>
-  );
+  return <FindAgencyContent />;
 } 

@@ -26,13 +26,13 @@ export interface UseInfiniteScrollFetchReturn<T> {
   items: T[];
   page: number;
   isLoading: boolean;
-  isInitialLoading: boolean; // New: true only for first page request
-  isFetchingMore: boolean; // New: true when loading additional pages
+  isInitialLoading: boolean; // true until first page resolves
+  isFetchingMore: boolean; // true when loading additional pages
   isError: boolean;
   error: string | null;
   hasMore: boolean;
   total: number;
-  hasFetchedOnce: boolean; // New: true after first response (success or error)
+  hasFetchedOnce: boolean; // true after first response (success or error)
   loadMore: () => void;
   reset: () => void;
   refresh: () => void;
@@ -52,18 +52,18 @@ export function useInfiniteScrollFetch<T>({
   const [items, setItems] = useState<T[]>([]);
   const [page, setPage] = useState(initialPage);
   const [isLoading, setIsLoading] = useState(false);
-  const [isInitialLoading, setIsInitialLoading] = useState(false); // New state
-  const [isFetchingMore, setIsFetchingMore] = useState(false); // New state
+  const [isInitialLoading, setIsInitialLoading] = useState(true); // Start with true for immediate skeleton display
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [isError, setIsError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [total, setTotal] = useState(0);
-  const [hasFetchedOnce, setHasFetchedOnce] = useState(false); // New state
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
   
   const sentinelRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const isLoadingRef = useRef(false);
-  const isInitialLoadRef = useRef(false); // Track if this is the first load
+  const isInitialLoadRef = useRef(false);
 
   // Memoize filters to prevent unnecessary re-renders
   const memoizedFilters = useMemo(() => filters, deps);
@@ -73,7 +73,7 @@ export function useInfiniteScrollFetch<T>({
     setItems([]);
     setPage(initialPage);
     setIsLoading(false);
-    setIsInitialLoading(false);
+    setIsInitialLoading(true); // Reset to true to show skeletons immediately
     setIsFetchingMore(false);
     setIsError(false);
     setError(null);
@@ -92,20 +92,20 @@ export function useInfiniteScrollFetch<T>({
   // Set filters and reset pagination
   const setFilters = useCallback((newFilters: any) => {
     // Reset pagination when filters change
+    setPage(initialPage);
+    // Trigger a reset to clear current data and start fresh
     reset();
-    // Update filters in the next render cycle
-    setTimeout(() => {
-      setPage(initialPage);
-    }, 0);
-  }, [reset, initialPage]);
+  }, [initialPage, reset]);
 
   // Load more items
   const loadMore = useCallback(async () => {
-    if (isLoadingRef.current || !hasMore || !enabled) return;
+    console.log('loadMore called', { isLoadingRef: isLoadingRef.current, enabled, page });
+    if (isLoadingRef.current || !enabled) return;
 
     try {
       isLoadingRef.current = true;
       const isFirstPage = page === initialPage;
+      console.log('Starting fetch', { isFirstPage, page, filters: memoizedFilters });
       
       // Set appropriate loading states
       if (isFirstPage) {
@@ -127,9 +127,10 @@ export function useInfiniteScrollFetch<T>({
       abortControllerRef.current = new AbortController();
 
       const response = await fetcher(page, memoizedFilters);
+      console.log('Fetch response', response);
 
-      // Check if request was aborted
-      if (abortControllerRef.current.signal.aborted) return;
+      // Check if request was aborted - safely check if abortControllerRef.current exists
+      if (abortControllerRef.current && abortControllerRef.current.signal.aborted) return;
 
       // Handle both new format (items) and backward compatibility (listings/agencies)
       let responseItems: any[] = [];
@@ -140,6 +141,8 @@ export function useInfiniteScrollFetch<T>({
       } else if (response.agencies && Array.isArray(response.agencies)) {
         responseItems = response.agencies;
       }
+
+      console.log('Processed items', { responseItems: responseItems.length, total: response.total });
 
       if (responseItems.length > 0 || response.total === 0) {
         setItems(prevItems => 
@@ -157,8 +160,8 @@ export function useInfiniteScrollFetch<T>({
         throw new Error('Invalid response format or no items returned');
       }
     } catch (err: any) {
-      // Don't set error if request was aborted
-      if (abortControllerRef.current?.signal.aborted) return;
+      // Don't set error if request was aborted - safely check if abortControllerRef.current exists
+      if (abortControllerRef.current && abortControllerRef.current.signal.aborted) return;
 
       console.error('Error loading more items:', err);
       setIsError(true);
@@ -171,10 +174,11 @@ export function useInfiniteScrollFetch<T>({
     } finally {
       isLoadingRef.current = false;
       setIsLoading(false);
-      setIsInitialLoading(false);
+      setIsInitialLoading(false); // Always set to false after first request completes
       setIsFetchingMore(false);
+      console.log('Fetch completed, states reset');
     }
-  }, [fetcher, page, memoizedFilters, hasMore, enabled, initialPage, hasFetchedOnce]);
+  }, [fetcher, page, memoizedFilters, enabled, initialPage, hasFetchedOnce]);
 
   // Refresh function to reload current data
   const refresh = useCallback(async () => {
@@ -209,26 +213,32 @@ export function useInfiniteScrollFetch<T>({
     };
   }, [hasMore, isLoading, isInitialLoading, loadMore, enabled]);
 
-  // Initial load - only one effect for this
+  // Initial load - trigger immediately on mount when enabled
   useEffect(() => {
-    if (enabled && page === initialPage && items.length === 0 && !isLoading && !isInitialLoading) {
+    if (enabled && !isInitialLoadRef.current) {
+      console.log('Initial load effect triggered');
       isInitialLoadRef.current = true;
+      // Trigger first fetch immediately
       loadMore();
     }
-  }, [enabled, initialPage, items.length, isLoading, isInitialLoading, loadMore]);
+  }, [enabled, loadMore]);
 
   // Cleanup on unmount or when dependencies change
   useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
+        abortControllerRef.current = null;
       }
     };
   }, []);
 
-  // Reset when filters change
+  // Reset when filters change - but only after initial load
   useEffect(() => {
-    reset();
+    if (isInitialLoadRef.current) {
+      // Reset when filters change, but don't interfere with initial load
+      reset();
+    }
   }, [memoizedFilters, reset]);
 
   return {

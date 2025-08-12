@@ -4,10 +4,10 @@ export default function FindAgencyLoading() {
   return (
     <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-        {/* Header Skeleton */}
+        {/* Header */}
         <div className="mb-8">
-          <div className="h-9 bg-gray-200 rounded mb-2 w-2/3 animate-pulse"></div>
-          <div className="h-5 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Real Estate Agencies</h1>
+          <p className="text-gray-600">Discover trusted real estate agencies in your area</p>
         </div>
 
         {/* Search Form Skeleton */}

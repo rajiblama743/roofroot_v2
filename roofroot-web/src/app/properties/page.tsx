@@ -16,10 +16,14 @@ import ListingCardSkeleton from '@/components/ListingCardSkeleton';
 import SearchBar from '@/components/SearchBar';
 import { useInfiniteScrollFetch } from '@/hooks/useInfiniteScrollFetch';
 
-function PropertiesPageContent() {
+// Separate component for the properties list to enable Suspense
+function PropertiesList({ viewMode, onFilterChange, onClearFilters }: { 
+  viewMode: 'grid' | 'list';
+  onFilterChange: (filters: Partial<ListingFilters>) => void;
+  onClearFilters: () => void;
+}) {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filters, setFilters] = useState<ListingFilters>({
     search: searchParams.get('search') || '',
     type: (searchParams.get('type') as 'sale' | 'lease') || undefined,
@@ -77,32 +81,126 @@ function PropertiesPageContent() {
       }
     });
     router.push(`/properties?${params.toString()}`);
+    
+    // Notify parent component
+    onFilterChange(updatedFilters);
   };
 
   const clearFilters = () => {
     const clearedFilters = {};
     setFilters(clearedFilters);
     router.push('/properties');
+    onClearFilters();
   };
 
-  // Conditional rendering based on state flags
-  // 1. Show skeletons on initial loading (NO empty copy)
+  // Show skeletons during initial loading
   if (isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded mb-8 w-1/3"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                <ListingCardSkeleton key={i} viewMode={viewMode} />
-              ))}
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-3 sm:gap-4">
+        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+          <ListingCardSkeleton key={i} viewMode={viewMode} />
+        ))}
       </div>
     );
   }
+
+  // Show error UI
+  if (isError) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
+        <p className="text-sm sm:text-base text-gray-500 mb-4">{error}</p>
+        <button
+          onClick={reset}
+          className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+        >
+          Try again
+        </button>
+      </div>
+    );
+  }
+
+  // Show empty state only after first fetch completes and there are truly no results
+  if (listings.length === 0 && hasFetchedOnce) {
+    return (
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
+        <p className="text-sm sm:text-base text-gray-500 mb-4">
+          No properties found matching your criteria.
+        </p>
+        <button
+          onClick={clearFilters}
+          className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
+        >
+          Clear filters
+        </button>
+      </div>
+    );
+  }
+
+  // Show properties list
+  return (
+    <>
+      {/* Properties Grid/List */}
+      <div 
+        className={`grid gap-3 sm:gap-4 ${
+          viewMode === 'grid' 
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            : 'grid-cols-1'
+        }`}
+        aria-busy={isLoading}
+      >
+        {listings.map((listing) => (
+          <LazyPropertyCard 
+            key={listing.id} 
+            listing={listing} 
+            viewMode={viewMode}
+          />
+        ))}
+      </div>
+
+      {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
+      {isFetchingMore && (
+        <div className={`grid gap-3 sm:gap-4 mt-4 ${
+          viewMode === 'grid' 
+            ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            : 'grid-cols-1'
+        }`}>
+          {[1, 2, 3, 4].map((i) => (
+            <ListingCardSkeleton key={`loading-${i}`} viewMode={viewMode} />
+          ))}
+        </div>
+      )}
+
+      {/* End of List Message */}
+      {!hasMore && listings.length > 0 && (
+        <div className="text-center py-8">
+          <p className="text-gray-500 text-sm">
+            {total > 0 ? `Showing all ${total} properties` : 'No more properties to load'}
+          </p>
+        </div>
+      )}
+
+      {/* Load More Sentinel */}
+      <div 
+        ref={sentinelRef}
+        id="load-more-sentinel"
+        className="h-4 w-full"
+        aria-hidden="true"
+      />
+    </>
+  );
+}
+
+function PropertiesPageContent() {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentFilters, setCurrentFilters] = useState<ListingFilters>({});
+
+  const handleFilterChange = (filters: Partial<ListingFilters>) => {
+    setCurrentFilters(prev => ({ ...prev, ...filters }));
+  };
+
+  const handleClearFilters = () => {
+    setCurrentFilters({});
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
@@ -130,7 +228,7 @@ function PropertiesPageContent() {
               
               {/* Property Type Filter */}
               <select
-                value={filters.type || 'all'}
+                value={currentFilters.type || 'all'}
                 onChange={(e) => handleFilterChange({ 
                   type: e.target.value === 'all' ? undefined : e.target.value as 'sale' | 'lease' 
                 })}
@@ -143,7 +241,7 @@ function PropertiesPageContent() {
 
               {/* Price Range Filter */}
               <select
-                value={`${filters.minPrice || ''}-${filters.maxPrice || ''}`}
+                value={`${currentFilters.minPrice || ''}-${currentFilters.maxPrice || ''}`}
                 onChange={(e) => {
                   const [min, max] = e.target.value.split('-');
                   handleFilterChange({
@@ -162,9 +260,9 @@ function PropertiesPageContent() {
               </select>
 
               {/* Clear Filters */}
-              {(filters.type || filters.minPrice || filters.maxPrice || filters.search) && (
+              {(currentFilters.type || currentFilters.minPrice || currentFilters.maxPrice || currentFilters.search) && (
                 <button
-                  onClick={clearFilters}
+                  onClick={handleClearFilters}
                   className="text-sm text-blue-600 hover:text-blue-700 font-medium w-full sm:w-auto text-left sm:text-center py-2 sm:py-0"
                 >
                   Clear all
@@ -199,109 +297,25 @@ function PropertiesPageContent() {
           </div>
         </div>
 
-        {/* Results */}
-        {isInitialLoading && (
-          // Show subtle loading indicator during filter changes
-          <div className="mb-4">
-            {/* Loading bar */}
-            <div className="w-full bg-gray-200 rounded-full h-1 mb-4">
-              <div className="bg-blue-500 h-1 rounded-full animate-pulse" style={{ width: '100%' }}></div>
-            </div>
-            {/* Loading text */}
-            <div className="flex items-center justify-center">
-              <div className="flex items-center space-x-2 text-sm text-gray-500">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-                <span>Loading properties...</span>
-              </div>
-            </div>
+        {/* Properties List with Suspense */}
+        <Suspense fallback={
+          <div className="grid gap-3 sm:gap-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <ListingCardSkeleton key={i} viewMode={viewMode} />
+            ))}
           </div>
-        )}
-
-        {isError ? (
-          // 2. Show error UI
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-            <p className="text-sm sm:text-base text-gray-500 mb-4">{error}</p>
-            <button
-              onClick={reset}
-              className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
-            >
-              Try again
-            </button>
-          </div>
-        ) : listings.length === 0 && hasFetchedOnce ? (
-          // 3. Only show empty state AFTER first fetch completes AND there are truly no results
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sm:p-8 text-center">
-            <p className="text-sm sm:text-base text-gray-500 mb-4">
-              No properties found matching your criteria.
-            </p>
-            <button
-              onClick={clearFilters}
-              className="inline-flex items-center bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-sm sm:text-base"
-            >
-              Clear filters
-            </button>
-          </div>
-        ) : (
-          // 4. Show list + sentinel for lazy loading
-          <>
-            {/* Properties Grid/List */}
-            <div 
-              className={`grid gap-3 sm:gap-4 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                  : 'grid-cols-1'
-              }`}
-              aria-busy={isLoading}
-            >
-              {listings.map((listing) => (
-                <LazyPropertyCard 
-                  key={listing.id} 
-                  listing={listing} 
-                  viewMode={viewMode}
-                />
-              ))}
-            </div>
-
-            {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
-            {isFetchingMore && (
-              <div className={`grid gap-3 sm:gap-4 mt-4 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-                  : 'grid-cols-1'
-              }`}>
-                {[1, 2, 3, 4].map((i) => (
-                  <ListingCardSkeleton key={`loading-${i}`} viewMode={viewMode} />
-                ))}
-              </div>
-            )}
-
-            {/* End of List Message */}
-            {!hasMore && listings.length > 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-500 text-sm">
-                  {total > 0 ? `Showing all ${total} properties` : 'No more properties to load'}
-                </p>
-              </div>
-            )}
-
-            {/* Load More Sentinel */}
-            <div 
-              ref={sentinelRef}
-              id="load-more-sentinel"
-              className="h-4 w-full"
-              aria-hidden="true"
-            />
-          </>
-        )}
+        }>
+          <PropertiesList 
+            viewMode={viewMode} 
+            onFilterChange={handleFilterChange}
+            onClearFilters={handleClearFilters}
+          />
+        </Suspense>
       </div>
     </div>
   );
 }
 
 export default function PropertiesPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <PropertiesPageContent />
-    </Suspense>
-  );
+  return <PropertiesPageContent />;
 }
