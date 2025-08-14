@@ -26,7 +26,7 @@ export default function HomePage() {
     // Check if user is logged in and is an agency
     const user = JSON.parse(sessionStorage.getItem('user') || 'null');
     if (user && user.role === 'agency') {
-      router.push('/dashboard');
+      router.push('/agency/login');
     }
   }, []);
 

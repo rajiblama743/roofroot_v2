@@ -77,10 +77,10 @@ export default function PropertyDetailPage() {
     try {
       const response = await apiClient.deleteListing(params.id as string);
       
-      if (response.success) {
-        toast.success('Listing deleted successfully');
-        router.push('/dashboard');
-      } else {
+                  if (response.success) {
+                toast.success('Listing deleted successfully');
+                router.push(user?.role === 'agency' ? '/agency/login' : '/dashboard');
+            } else {
         toast.error('Failed to delete listing');
       }
     } catch (error) {
@@ -121,11 +121,11 @@ export default function PropertyDetailPage() {
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Property Not Found</h1>
             <p className="text-gray-600 mb-6">{error || 'The property you are looking for does not exist.'}</p>
             <Link
-              href={isFromDashboard ? "/dashboard" : "/properties"}
+              href={isFromDashboard ? (user?.role === 'agency' ? "/agency/login" : "/dashboard") : "/properties"}
               className="inline-flex items-center bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Back to {isFromDashboard ? "Dashboard" : "Properties"}
+              Back to {isFromDashboard ? (user?.role === 'agency' ? "Agency Login" : "Dashboard") : "Properties"}
             </Link>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function PropertyDetailPage() {
                 {isOwner && (
                   <div className="flex space-x-2">
                     <button
-                      onClick={() => router.push(`/dashboard/edit-property/${listing.id}`)}
+                                              onClick={() => router.push(user?.role === 'agency' ? `/agency/login` : `/dashboard/edit-property/${listing.id}`)}
                       className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors flex items-center"
                     >
                       <Edit className="w-4 h-4 mr-1" />

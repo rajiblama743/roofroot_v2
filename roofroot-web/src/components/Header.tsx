@@ -27,7 +27,7 @@ const Header = () => {
     if (currentUser) {
       setUser(JSON.parse(currentUser));
     }
-  }, [pathname]); // Re-run when pathname changes
+  }, []); // Only run once on mount to prevent excessive re-runs
 
   const handleLogout = () => {
     // Clear all auth data
@@ -44,7 +44,7 @@ const Header = () => {
     { name: 'Contact', href: '/contact', icon: Building2 },
   ];
 
-  // Simplified user menu - only profile and logout
+  // User menu items
   const userMenuItems = [
     { name: 'Profile', href: `/profile/${user?._id || ''}`, icon: User },
     { name: 'Logout', href: '#', icon: LogOut, onClick: handleLogout },
@@ -59,7 +59,7 @@ const Header = () => {
         <div className="flex justify-between items-center h-14 sm:h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <Link href={user?.role === 'agency' ? "/dashboard" : "/"} className="flex items-center">
+            <Link href={user?.role === 'agency' ? "/agency/login" : "/"} className="flex items-center">
               <Image 
                 src="/roofchains-logo.png" 
                 alt="RoofChains Logo" 

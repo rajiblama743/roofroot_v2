@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from 'react-hot-toast';
-import Header from '@/components/Header';
+import ConditionalHeader from '@/components/ConditionalHeader';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -27,8 +27,8 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50">
-          <Header />
-          <main className="pt-16">
+          <ConditionalHeader />
+                    <main>
             {children}
           </main>
         </div>

@@ -42,7 +42,13 @@ export default function LoginPage() {
         
         // Redirect based on user role
         if (response.user.role === 'agency') {
-          router.push('/dashboard');
+          // Redirect agency users to agency login page
+          toast.error('Agency users should login at /agency');
+          // Clear any stored data
+          sessionStorage.clear();
+          localStorage.removeItem('user');
+          router.push('/agency/login');
+          return;
         } else {
           router.push('/properties');
         }
