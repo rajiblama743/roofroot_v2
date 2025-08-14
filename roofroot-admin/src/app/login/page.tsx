@@ -32,7 +32,7 @@ export default function LoginPage() {
       if (response.success && response.user) {
         // Check if user is admin
         if (response.user.role === 'admin') {
-          router.push('/dashboard');
+          router.push('/');
         } else {
           toast.error('Access denied. Admin privileges required.');
         }

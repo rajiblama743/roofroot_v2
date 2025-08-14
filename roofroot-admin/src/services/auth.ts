@@ -13,9 +13,9 @@ export interface AdminUser {
 
 export const authService = {
   // Login function
-  login: async (email: string, password: string) => {
+  login: async (credentials: { email: string; password: string }) => {
     try {
-      const response = await api.login(email, password);
+      const response = await api.login(credentials.email, credentials.password);
       
       if (response.success && response.token) {
         // Store token and user data
