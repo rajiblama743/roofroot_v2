@@ -42,11 +42,11 @@ const FeaturedListings = () => {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
         {[1, 2, 3].map((i) => (
           <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
             <div className="h-40 sm:h-48 bg-gray-200"></div>
-            <div className="p-4 sm:p-6">
+            <div className="p-2 sm:p-4 lg:p-6">
               <div className="h-4 bg-gray-200 rounded mb-2"></div>
               <div className="h-4 bg-gray-200 rounded mb-4 w-2/3"></div>
               <div className="h-4 bg-gray-200 rounded w-1/2"></div>
@@ -74,7 +74,7 @@ const FeaturedListings = () => {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
       {listings.map((listing) => (
         <Link
           key={listing.id}
@@ -103,14 +103,14 @@ const FeaturedListings = () => {
           </div>
 
           {/* Property Details - Main content area */}
-          <div className="flex-1 p-4 flex flex-col justify-between">
+          <div className="flex-1 p-2 sm:p-4 flex flex-col justify-between">
             {/* Title - Exactly 2 lines reserved */}
-            <h3 className="text-base font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3.5rem]">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3.5rem]">
               {listing.title}
             </h3>
             
             {/* Description - 3 lines max with explicit height */}
-            <p className="text-gray-600 text-sm mb-3 overflow-hidden" style={{ 
+            <p className="text-gray-600 text-xs sm:text-sm mb-3 overflow-hidden" style={{ 
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
@@ -121,16 +121,16 @@ const FeaturedListings = () => {
           </p>
 
             {/* Address - 1 line only */}
-            <div className="flex items-center text-gray-500 text-sm mb-3">
-              <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+            <div className="flex items-center text-gray-500 text-xs sm:text-sm mb-3">
+              <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
               <span className="truncate">{listing.location}</span>
             </div>
 
             {/* Price & Date - Unchanged */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center text-green-600 font-semibold">
-                <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="text-sm">{formatPrice(listing.price)}</span>
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">{formatPrice(listing.price)}</span>
               </div>
               
               <div className="flex items-center text-gray-500 text-xs">
@@ -143,11 +143,11 @@ const FeaturedListings = () => {
 
         {/* Footer - Agency name + link - Fixed height at bottom */}
         {listing.createdBy && (
-          <div className="h-12 flex items-center px-4 py-2 border-t border-gray-100 bg-gray-50">
-            <Building2 className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+          <div className="h-12 flex items-center px-2 sm:px-4 py-2 border-t border-gray-100 bg-gray-50">
+            <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-1 sm:mr-2 flex-shrink-0" />
             <Link 
               href={`/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
-              className="text-sm text-gray-500 hover:text-blue-600 transition-colors truncate"
+              className="text-xs sm:text-sm text-gray-500 hover:text-blue-600 transition-colors truncate"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();

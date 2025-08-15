@@ -107,7 +107,7 @@ function AgenciesList({ searchTerm }: { searchTerm: string }) {
 
       {/* Agency Grid */}
       <div 
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8"
         aria-busy={isLoading}
       >
         {agencies.map((agency) => (
@@ -121,7 +121,7 @@ function AgenciesList({ searchTerm }: { searchTerm: string }) {
 
       {/* Loading More Skeleton - show inline skeletons at list end while fetching more */}
       {isFetchingMore && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
           {[1, 2, 3, 4].map((i) => (
             <AgencyCardSkeleton key={`loading-${i}`} />
           ))}
@@ -195,7 +195,7 @@ function FindAgencyContent() {
 
         {/* Agencies List with Suspense */}
         <Suspense fallback={
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <AgencyCardSkeleton key={i} />
             ))}

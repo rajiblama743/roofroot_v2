@@ -63,9 +63,9 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
                 blurDataURL={getBlurDataURL()}
               />
             </div>
-            <div className="flex-1 p-3 sm:p-4 lg:p-6">
+            <div className="flex-1 p-2 sm:p-3 lg:p-6">
               <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-0 mb-2">
-                <h3 className="text-base font-semibold text-gray-900 line-clamp-2 min-h-[3.5rem]">
+                <h3 className="text-sm sm:text-base font-semibold text-gray-900 line-clamp-2 min-h-[3.5rem]">
                   {listing.title}
                 </h3>
                 <span className={`px-2 py-1 rounded-full text-xs font-semibold self-start ${
@@ -77,7 +77,7 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
                 </span>
               </div>
               
-              <p className="text-gray-600 text-sm mb-3 overflow-hidden flex-1" style={{ 
+              <p className="text-gray-600 text-xs sm:text-sm mb-3 overflow-hidden flex-1" style={{ 
                 display: '-webkit-box',
                 WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical',
@@ -88,14 +88,14 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
               </p>
               
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
-                <div className="flex items-center text-gray-500 text-sm">
-                  <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                <div className="flex items-center text-gray-500 text-xs sm:text-sm">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
                   <span className="truncate">{listing.location}</span>
                 </div>
                 
                 <div className="flex items-center text-green-600 font-semibold">
-                  <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-sm">{formatPrice(listing.price)}</span>
+                  <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">{formatPrice(listing.price)}</span>
                 </div>
               </div>
               
@@ -106,8 +106,8 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
                 </div>
                 
                 {listing.createdBy && (
-                  <div className="flex items-center text-gray-500 text-sm">
-                    <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <div className="flex items-center text-gray-500 text-xs sm:text-sm">
+                    <Building2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
                     <Link 
                       href={`/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
                       className="hover:text-blue-600 transition-colors cursor-pointer z-10 relative truncate"
@@ -170,15 +170,15 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
         </div>
 
         {/* Property Details - Main content area */}
-        <div className="flex-1 p-4 flex flex-col justify-between">
+        <div className="flex-1 p-2 sm:p-4 flex flex-col justify-between">
           <div>
             {/* Title - Exactly 2 lines reserved */}
-            <h3 className="text-base font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[3.5rem]">
               {listing.title}
             </h3>
             
             {/* Description - 3 lines max with explicit height */}
-            <p className="text-gray-600 text-sm mb-3 overflow-hidden" style={{ 
+            <p className="text-gray-600 text-xs sm:text-sm mb-3 overflow-hidden" style={{ 
               display: '-webkit-box',
               WebkitLineClamp: 3,
               WebkitBoxOrient: 'vertical',
@@ -189,16 +189,16 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
             </p>
 
             {/* Address - 1 line only */}
-            <div className="flex items-center text-gray-500 text-sm mb-3">
-              <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+            <div className="flex items-center text-gray-500 text-xs sm:text-sm mb-3">
+              <MapPin className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
               <span className="truncate">{listing.location}</span>
             </div>
 
             {/* Price & Date - Unchanged */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center text-green-600 font-semibold">
-                <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="text-sm">{formatPrice(listing.price)}</span>
+                <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                <span className="text-xs sm:text-sm">{formatPrice(listing.price)}</span>
               </div>
               
               <div className="flex items-center text-gray-500 text-xs">
@@ -211,11 +211,11 @@ export default function PropertyCard({ listing, viewMode, fromAgency }: Property
 
         {/* Footer - Agency name + link - Fixed height at bottom */}
         {listing.createdBy && (
-          <div className="h-12 flex items-center px-4 py-2 border-t border-gray-100 bg-gray-50">
-            <Building2 className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+          <div className="h-12 flex items-center px-2 sm:px-4 py-2 border-t border-gray-100 bg-gray-50">
+            <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-1 sm:mr-2 flex-shrink-0" />
             <Link 
               href={`/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
-              className="text-sm text-gray-500 hover:text-blue-600 transition-colors truncate"
+              className="text-xs sm:text-sm text-gray-500 hover:text-blue-600 transition-colors truncate"
               onClick={(e) => {
                 e.stopPropagation();
                 e.preventDefault();
