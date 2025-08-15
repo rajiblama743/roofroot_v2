@@ -25,6 +25,10 @@ module.exports = {
         'fade-in': 'fadeIn 0.3s ease-out',
         'slide-up': 'slideUp 0.3s ease-out',
       },
+      height: {
+        '1/10': '10%',
+        '3/10': '30%',
+      },
       keyframes: {
         fadeIn: {
           '0%': { opacity: '0', transform: 'translateY(10px)' },
@@ -37,4 +41,5 @@ module.exports = {
       },
     },
   },
+  plugins: [require('@tailwindcss/line-clamp')],
 } 

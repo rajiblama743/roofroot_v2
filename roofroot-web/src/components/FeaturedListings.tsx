@@ -16,12 +16,16 @@ const FeaturedListings = () => {
       try {
         setLoading(true);
         const response = await apiClient.getListings({ 
-          limit: 6,
+          limit: 10, // Fetch more listings to have a better selection for randomization
           page: 1 
         });
         
         if (response.success) {
-          setListings(response.listings || []);
+          const allListings = response.listings || [];
+          // Randomly select 3 properties
+          const shuffled = [...allListings].sort(() => 0.5 - Math.random());
+          const randomListings = shuffled.slice(0, 3);
+          setListings(randomListings);
         } else {
           setError('Failed to load featured listings');
         }
@@ -39,7 +43,7 @@ const FeaturedListings = () => {
   if (loading) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
             <div className="h-40 sm:h-48 bg-gray-200"></div>
             <div className="p-4 sm:p-6">
@@ -75,10 +79,10 @@ const FeaturedListings = () => {
         <Link
           key={listing.id}
           href={`/properties/${listing.id}`}
-          className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+          className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 h-80 md:h-96 flex flex-col"
         >
-          {/* Property Image */}
-          <div className="relative h-40 sm:h-48 overflow-hidden">
+          {/* Property Image - 35% of card height */}
+          <div className="relative w-full overflow-hidden" style={{ height: '35%', minHeight: '112px' }}>
             <img
               src={listing.images && listing.images.length > 0 
                 ? listing.images[0] 
@@ -87,7 +91,7 @@ const FeaturedListings = () => {
               alt={listing.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
-            <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
+            <div className="absolute top-2 left-2">
               <span className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold ${
                 listing.type === 'sale' 
                   ? 'bg-green-100 text-green-800' 
@@ -98,25 +102,35 @@ const FeaturedListings = () => {
             </div>
           </div>
 
-          {/* Property Details */}
-          <div className="p-4 sm:p-6">
-            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-1">
-              {truncateText(listing.title, 50)}
+          {/* Property Details - Main content area */}
+          <div className="flex-1 p-4 flex flex-col justify-between">
+            {/* Title - Exactly 2 lines reserved */}
+            <h3 className="text-base font-semibold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[3.5rem]">
+              {listing.title}
             </h3>
             
-            <p className="text-gray-600 mb-4 text-sm line-clamp-2">
-              {truncateText(listing.description, 100)}
-            </p>
+            {/* Description - 3 lines max with explicit height */}
+            <p className="text-gray-600 text-sm mb-3 overflow-hidden" style={{ 
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              lineHeight: '1.4rem',
+              maxHeight: '4.2rem'
+            }}>
+              {listing.description}
+          </p>
 
+            {/* Address - 1 line only */}
             <div className="flex items-center text-gray-500 text-sm mb-3">
-              <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
-              <span className="line-clamp-1">{truncateText(listing.location, 40)}</span>
+              <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+              <span className="truncate">{listing.location}</span>
             </div>
 
-            <div className="flex items-center justify-between">
+            {/* Price & Date - Unchanged */}
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center text-green-600 font-semibold">
-                <DollarSign className="w-4 h-4 mr-1 flex-shrink-0" />
-                <span className="text-sm sm:text-base">{formatPrice(listing.price)}</span>
+                <DollarSign className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="text-sm">{formatPrice(listing.price)}</span>
               </div>
               
               <div className="flex items-center text-gray-500 text-xs">
@@ -125,26 +139,27 @@ const FeaturedListings = () => {
               </div>
             </div>
 
-            {/* Agency Info */}
-            {listing.createdBy && (
-              <div className="flex items-center justify-center sm:justify-start pt-3 border-t border-gray-100 min-h-[2rem] sm:min-h-0">
-                <Building2 className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 mr-2 flex-shrink-0" />
-                <Link 
-                  href={`/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
-                  className="text-xs sm:text-sm text-gray-500 line-clamp-1 hover:text-blue-600 transition-colors text-center sm:text-left flex items-center cursor-pointer z-10 relative"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (listing.createdBy) {
-                      window.location.href = `/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`;
-                    }
-                  }}
-                >
-                  {listing.createdBy.agencyName || listing.createdBy.name}
-                </Link>
-              </div>
-            )}
           </div>
+
+        {/* Footer - Agency name + link - Fixed height at bottom */}
+        {listing.createdBy && (
+          <div className="h-12 flex items-center px-4 py-2 border-t border-gray-100 bg-gray-50">
+            <Building2 className="w-4 h-4 text-gray-400 mr-2 flex-shrink-0" />
+            <Link 
+              href={`/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
+              className="text-sm text-gray-500 hover:text-blue-600 transition-colors truncate"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (listing.createdBy) {
+                  window.location.href = `/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`;
+                }
+              }}
+            >
+              {listing.createdBy.agencyName || listing.createdBy.name}
+            </Link>
+          </div>
+        )}
         </Link>
       ))}
     </div>

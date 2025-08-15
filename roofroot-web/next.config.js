@@ -1,15 +1,24 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Redirects for URL changes
-  async redirects() {
-    return [
-      {
-        source: '/agency/:slug',
-        destination: '/find-agency/:slug',
-        permanent: true,
-      },
-    ];
-  },
+  // Redirects for URL changes - Removed problematic redirect
+  // async redirects() {
+  //   return [
+  //     // Redirect old agency URLs to find-agency (excluding login)
+  //     {
+  //       source: '/agency/:slug',
+  //       destination: '/find-agency/:slug',
+  //       permanent: true,
+  //       // Exclude login route by using a more specific pattern
+  //       has: [
+  //         {
+  //           type: 'header',
+  //           key: 'x-redirect-type',
+  //           value: 'agency-to-find',
+  //         },
+  //       ],
+  //     },
+  //   ];
+  // },
   
   // Image optimization configuration
   images: {
