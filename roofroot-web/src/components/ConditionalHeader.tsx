@@ -6,10 +6,10 @@ import Header from './Header';
 export default function ConditionalHeader() {
   const pathname = usePathname();
   
-  // Don't show Header for agency routes
-  const isAgencyRoute = pathname.startsWith('/agency');
+  // Don't show Header for agency dashboard routes (but show for public find-agency routes)
+  const isAgencyDashboardRoute = pathname.startsWith('/agency') && !pathname.startsWith('/agency/login');
   
-  if (isAgencyRoute) {
+  if (isAgencyDashboardRoute) {
     return null;
   }
   

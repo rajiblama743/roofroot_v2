@@ -48,7 +48,7 @@ function AgenciesList({ searchTerm }: { searchTerm: string }) {
   });
 
   const handleAgencyClick = (agencyName: string) => {
-    router.push(`/agency/${slugUtils.generateSlug(agencyName)}?from=find-agency`);
+    router.push(`/find-agency/${slugUtils.generateSlug(agencyName)}?from=find-agency`);
   };
 
   // Show skeletons during initial loading
@@ -161,7 +161,7 @@ function FindAgencyContent() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 pb-6 sm:pt-20 sm:pb-8">
+    <div className="min-h-screen bg-gray-50 pb-6 sm:pb-8">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
         {/* Header */}
         <div className="mb-8">

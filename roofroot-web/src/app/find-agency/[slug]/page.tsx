@@ -63,7 +63,7 @@ export default function AgencyListingsPage() {
 
 
 
-  const agencySlug = params.agencyName as string;
+  const agencySlug = params.slug as string;
   const agencyName = slugUtils.slugToText(agencySlug);
 
   useEffect(() => {
@@ -81,13 +81,31 @@ export default function AgencyListingsPage() {
       });
       
       if (response.success) {
-        setListings(response.listings);
-        setAgencyInfo(response.agencyInfo);
+        // Handle both 'items' and 'listings' properties for backward compatibility
+        let listings = response.items || response.listings || [];
+        
+        // Transform MongoDB _id to id if needed
+        if (listings.length > 0 && listings[0]._id && !listings[0].id) {
+          listings = listings.map((listing: any) => ({
+            ...listing,
+            id: listing._id
+          }));
+        }
+        
+        setListings(listings);
+        
+        // Handle agency info - check for different possible field names
+        const agencyInfo = response.agencyInfo || response.agency || {
+          name: agencyName,
+          agencyName: agencyName
+        };
+        setAgencyInfo(agencyInfo);
+        
         setPagination({
-          total: response.total,
-          page: response.page,
-          limit: response.limit,
-          totalPages: response.totalPages,
+          total: response.total || 0,
+          page: response.page || 1,
+          limit: response.limit || 12,
+          totalPages: response.totalPages || 0,
         });
       } else {
         setError(response.message || 'Failed to load agency listings');
@@ -115,7 +133,7 @@ export default function AgencyListingsPage() {
   const handleCopyUrl = async () => {
     try {
       // Create clean URL with slug (without query parameters)
-      const cleanUrl = `${window.location.origin}/agency/${agencySlug}`;
+      const cleanUrl = `${window.location.origin}/find-agency/${agencySlug}`;
       
       // Copy to clipboard
       await navigator.clipboard.writeText(cleanUrl);
@@ -172,7 +190,7 @@ export default function AgencyListingsPage() {
     );
   }
 
-  const displayName = agencyInfo?.agencyName || agencyInfo?.name || agencyName;
+  const displayName = agencyInfo?.agencyName || agencyInfo?.name || agencyName || 'Agency';
 
   return (
     <div className="min-h-screen bg-gray-50 pb-6 sm:pb-8">
@@ -493,7 +511,7 @@ export default function AgencyListingsPage() {
                 </p>
                 <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
                   <p className="text-sm font-mono text-gray-800 break-all">
-                    {`${window.location.origin}/agency/${agencySlug}`}
+                    {`${window.location.origin}/find-agency/${agencySlug}`}
                   </p>
                 </div>
               </div>

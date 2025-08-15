@@ -28,7 +28,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50">
           <ConditionalHeader />
-                    <main>
+          <main className="pt-16 sm:pt-20">
             {children}
           </main>
         </div>

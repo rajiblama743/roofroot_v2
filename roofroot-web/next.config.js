@@ -1,5 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Redirects for URL changes
+  async redirects() {
+    return [
+      {
+        source: '/agency/:slug',
+        destination: '/find-agency/:slug',
+        permanent: true,
+      },
+    ];
+  },
+  
   // Image optimization configuration
   images: {
     // Allow external image domains

@@ -38,10 +38,10 @@ export default function PropertyDetailPage() {
       if (fromAgency === 'true' && agency) {
         setIsFromAgency(true);
         setAgencyName(decodeURIComponent(agency));
-      } else if (referrer.includes('/agency/')) {
+      } else if (referrer.includes('/find-agency/')) {
         setIsFromAgency(true);
         // Extract agency name from referrer URL
-        const agencyMatch = referrer.match(/\/agency\/([^\/\?]+)/);
+        const agencyMatch = referrer.match(/\/find-agency\/([^\/\?]+)/);
         if (agencyMatch) {
           setAgencyName(decodeURIComponent(agencyMatch[1]));
         }
@@ -143,7 +143,7 @@ export default function PropertyDetailPage() {
               isFromAgency && agencyName
                 ? [
                     { name: 'Home', href: '/' },
-                    { name: agencyName, href: `/agency/${slugUtils.generateSlug(agencyName)}` },
+                    { name: agencyName, href: `/find-agency/${slugUtils.generateSlug(agencyName)}` },
                     { name: listing?.title || 'Property Details' }
                   ]
                 : [
@@ -339,7 +339,7 @@ export default function PropertyDetailPage() {
                     </div>
                     <div className="ml-3">
                       <Link 
-                        href={`/agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
+                        href={`/find-agency/${slugUtils.generateSlug(listing.createdBy.agencyName || listing.createdBy.name)}`}
                         className="text-sm font-semibold text-gray-900 hover:text-blue-600 transition-colors"
                       >
                         {listing.createdBy.agencyName || listing.createdBy.name}

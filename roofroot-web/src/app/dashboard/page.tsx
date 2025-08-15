@@ -101,7 +101,7 @@ export default function DashboardPage() {
     try {
       // Create clean URL for the agency's public page with slug
       const agencySlug = slugUtils.generateSlug(agencyName);
-      const cleanUrl = `${window.location.origin}/agency/${agencySlug}`;
+              const cleanUrl = `${window.location.origin}/find-agency/${agencySlug}`;
       
       // Copy to clipboard
       await navigator.clipboard.writeText(cleanUrl);
@@ -452,7 +452,7 @@ export default function DashboardPage() {
               </p>
               <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
                 <p className="text-sm font-mono text-gray-800 break-all">
-                  {`${window.location.origin}/agency/${slugUtils.generateSlug(agencyName)}`}
+                                      {`${window.location.origin}/find-agency/${slugUtils.generateSlug(agencyName)}`}
                 </p>
               </div>
             </div>
