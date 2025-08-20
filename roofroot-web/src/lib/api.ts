@@ -228,7 +228,7 @@ export const API_ENDPOINTS = {
   GET_USER: '/users/:id',
   UPDATE_USER: '/users/:id',
   DELETE_USER: '/users/:id',
-  SEARCH_AGENCIES: '/users/search/agencies',
+  SEARCH_AGENCIES: '/agencies',
   
   // Listings
   GET_LISTINGS: '/listings',

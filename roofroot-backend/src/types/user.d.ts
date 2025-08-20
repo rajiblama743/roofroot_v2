@@ -1,78 +1,55 @@
-import { Request } from 'express';
-import { IUser, UserRole, UserStatus } from '../models/User';
+import { Document } from 'mongoose';
 
-// Extended Request interface with user property
-export interface AuthenticatedRequest extends Request {
-  user?: IUser & { _id: string };
-}
+export type UserRole = 'admin' | 'super_admin' | 'agency' | 'customer';
+export type UserStatus = 'active' | 'pending' | 'suspended';
 
-// Registration request type
-export interface RegisterRequest {
+export interface IUser extends Document {
+  email: string;
+  password: string;
   name: string;
-  email: string;
-  password: string;
   phoneNumber?: string;
-  agencyName?: string;
-  agencyDescription?: string;
-  license?: string;
-  address?: string;
-}
-
-// Login request type
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-// User creation request type (admin only)
-export interface CreateUserRequest extends RegisterRequest {
   role: UserRole;
-  status?: UserStatus;
-}
-
-// User update request type
-export interface UpdateUserRequest {
-  name?: string;
-  email?: string;
-  phoneNumber?: string;
-  agencyName?: string;
-  agencyDescription?: string;
-  license?: string;
-  address?: string;
-  role?: UserRole;
-  status?: UserStatus;
-}
-
-// Status update request type (admin only)
-export interface UpdateUserStatusRequest {
   status: UserStatus;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  lastActiveAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-// JWT payload type
-export interface JWTPayload {
-  userId: string;
+export interface IUserResponse {
+  _id: string;
   email: string;
+  name: string;
+  phoneNumber?: string;
+  role: UserRole;
+  status: UserStatus;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  lastActiveAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface IUserCreate {
+  email: string;
+  password: string;
+  name: string;
+  phoneNumber?: string;
   role: UserRole;
 }
 
-// API response types
-export interface AuthResponse {
-  success: boolean;
-  message: string;
-  token?: string;
-  user?: Omit<IUser, 'password'>;
+export interface IUserUpdate {
+  name?: string;
+  phoneNumber?: string;
+  status?: UserStatus;
+  emailVerified?: boolean;
+  phoneVerified?: boolean;
+  lastActiveAt?: Date;
 }
 
-export interface UserResponse {
-  success: boolean;
-  message: string;
-  user?: Omit<IUser, 'password'>;
-  users?: Omit<IUser, 'password'>[];
-}
-
-// Error response type
-export interface ErrorResponse {
-  success: false;
-  message: string;
-  errors?: string[];
+export interface IUserLogin {
+  email: string;
+  password: string;
 } 

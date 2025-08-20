@@ -1,327 +1,414 @@
-import { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import User, { IUser } from '../models/User';
-import { RegisterRequest, LoginRequest, AuthResponse, JWTPayload, AuthenticatedRequest } from '../types/user';
-import { generateAccessToken } from '../middlewares/authMiddleware';
-import bcrypt from 'bcryptjs';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import User from '../models/Users';
+import Agency from '../models/Agencies';
+import Customer from '../models/Customers';
+import Admin from '../models/Admins';
+import { generateSlug, generateUniqueSlug } from '../utils/slugify';
+import { IAuthenticatedRequest, IAuthResponse } from '../types/common';
+import { ValidationError, ConflictError, AuthenticationError, UniformGatingError } from '../utils/errors';
 
-// Validation rules for registration
-export const validateRegistration = [
-  body('name')
-    .trim()
-    .isLength({ min: 2, max: 100 })
-    .withMessage('Name must be between 2 and 100 characters'),
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email address'),
-  body('password')
-    .isLength({ min: 6 })
-    .withMessage('Password must be at least 6 characters long'),
-  body('phoneNumber')
-    .optional()
-    .matches(/^[\+]?[1-9][\d]{0,15}$/)
-    .withMessage('Please provide a valid phone number'),
-  body('agencyName')
-    .optional()
-    .trim()
-    .isLength({ max: 200 })
-    .withMessage('Agency name cannot exceed 200 characters'),
-  body('agencyDescription')
-    .optional()
-    .trim()
-    .isLength({ max: 1000 })
-    .withMessage('Agency description cannot exceed 1000 characters'),
-  body('license')
-    .optional()
-    .trim()
-    .isLength({ max: 200 })
-    .withMessage('License cannot exceed 200 characters'),
-  body('address')
-    .optional()
-    .trim()
-    .isLength({ max: 500 })
-    .withMessage('Address cannot exceed 500 characters'),
-  body('role')
-    .optional()
-    .isIn(['customer'])
-    .withMessage('Registration can only create customer accounts')
-];
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
 
-// Validation rules for login
-export const validateLogin = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email address'),
-  body('password')
-    .notEmpty()
-    .withMessage('Password is required')
-];
-
-// Registration endpoint
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const adminLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array().map(err => err.msg)
-      });
-      return;
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      throw new AuthenticationError('Invalid email or password');
     }
 
-    const { name, email, password, phoneNumber, agencyName, agencyDescription, license, address }: RegisterRequest = req.body;
-
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: 'User with this email already exists'
-      });
-      return;
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      throw new AuthenticationError('Invalid email or password');
     }
 
-    // Create new user (role defaults to 'customer' as per schema)
-    const user = new User({
-      name,
-      email,
-      password,
-      phoneNumber,
-      agencyName,
-      agencyDescription,
-      license,
-      address,
-      role: 'customer' // Force customer role for registration
-    });
+    // Check if user is admin
+    if (user.role !== 'admin' && user.role !== 'super_admin') {
+      throw new AuthenticationError('Access denied. Admin privileges required.');
+    }
 
+    // Check admin status
+    if (user.status === 'suspended') {
+      throw new AuthenticationError('Your admin account is suspended');
+    }
+
+    // Update last active timestamp
+    user.lastActiveAt = new Date();
     await user.save();
 
     // Generate JWT token
-    const payload: JWTPayload = {
-      userId: (user as any)._id.toString(),
+    const payload = {
+      userId: (user._id as any).toString(),
       email: user.email,
       role: user.role
     };
 
-    const token = generateAccessToken(payload);
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as any });
 
-    // Return user data without password
+    // Remove password from response
     const userResponse = user.toObject();
     delete (userResponse as any).password;
 
-    res.status(201).json({
+    const response: IAuthResponse = {
       success: true,
-      message: 'User registered successfully',
+      message: 'Admin login successful',
       token,
       user: userResponse
-    });
+    };
+
+    res.status(200).json(response);
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during registration'
-    });
+    next(error);
   }
 };
 
-// Login endpoint
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const agencyLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array().map(err => err.msg)
-      });
-      return;
-    }
-
     const { email, password } = req.body;
 
     // Find user by email
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-      return;
+      throw new AuthenticationError('Invalid email or password');
     }
-
-    // Check if user account is active
-    if (user.status !== 'active') {
-      res.status(403).json({
-        success: false,
-        message: 'Account is not active. Please contact support.'
-      });
-      return;
-    }
-
-    // Check if agency account is pending approval (this check is redundant since we already checked status !== 'active')
-    // if (user.role === 'agency' && user.status === 'pending') {
-    //   res.status(403).json({
-    //     success: false,
-    //     message: 'Your agency account is pending approval. Please wait for admin approval.'
-    //   });
-    //   return;
-    // }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
-      res.status(401).json({
-        success: false,
-        message: 'Invalid email or password'
-      });
-      return;
+      throw new AuthenticationError('Invalid email or password');
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: user._id, 
-        email: user.email, 
-        role: user.role,
-        status: user.status
-      },
-      process.env.JWT_SECRET!,
-      { expiresIn: '24h' }
-    );
+    // Check if user is agency
+    if (user.role !== 'agency') {
+      throw new AuthenticationError('Access denied. Agency account required.');
+    }
 
-    // Return success response with token and user data
-    res.status(200).json({
+    // UNIFORM GATING: Agency login requires BOTH active status AND verified verification
+    if (user.status !== 'active') {
+      throw new UniformGatingError('Your agency account is not yet activated');
+    }
+
+    const agency = await Agency.findOne({ userId: user._id });
+    if (!agency) {
+      throw new UniformGatingError('Agency profile not found');
+    }
+
+    if (agency.verificationStatus !== 'verified') {
+      throw new UniformGatingError('Your agency account is not yet verified');
+    }
+
+    // Update last active timestamp
+    user.lastActiveAt = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const payload = {
+      userId: (user._id as any).toString(),
+      email: user.email,
+      role: user.role,
+      agencyId: (agency as any)._id?.toString()
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as any });
+
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete (userResponse as any).password;
+
+    const response: IAuthResponse = {
       success: true,
-      message: 'Login successful',
+      message: 'Agency login successful',
       token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-        agencyName: user.agencyName,
-        agencyDescription: user.agencyDescription,
-        phoneNumber: user.phoneNumber,
-        address: user.address,
-        license: user.license
-      }
-    });
+      user: userResponse,
+      agency: agency
+    };
+
+    res.status(200).json(response);
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during login'
-    });
+    next(error);
   }
 };
 
-// Agency request endpoint
-export const requestAgency = async (req: Request, res: Response): Promise<void> => {
+export const customerLogin = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array().map(err => err.msg)
-      });
-      return;
+    const { email, password } = req.body;
+
+    // Find user by email
+    const user = await User.findOne({ email }).select('+password');
+    if (!user) {
+      throw new AuthenticationError('Invalid email or password');
     }
 
-    const { name, email, password, phoneNumber, agencyName, agencyDescription, license, address }: RegisterRequest = req.body;
+    // Verify password
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      throw new AuthenticationError('Invalid email or password');
+    }
+
+    // Check if user is customer
+    if (user.role !== 'customer') {
+      throw new AuthenticationError('Access denied. Customer account required.');
+    }
+
+    // Check customer status
+    if (user.status !== 'active') {
+      throw new AuthenticationError('Your account is not active');
+    }
+
+    // Update last active timestamp
+    user.lastActiveAt = new Date();
+    await user.save();
+
+    // Generate JWT token
+    const payload = {
+      userId: (user._id as any).toString(),
+      email: user.email,
+      role: user.role
+    };
+
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN as any });
+
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete (userResponse as any).password;
+
+    const response: IAuthResponse = {
+      success: true,
+      message: 'Customer login successful',
+      token,
+      user: userResponse
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const adminRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { name, email, password, phoneNumber } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      res.status(400).json({
-        success: false,
-        message: 'User with this email already exists'
-      });
-      return;
+      throw new ConflictError('User with this email already exists');
     }
 
-    // Create new agency user with pending status
+    // Create admin user (always 'admin' role, never 'super_admin')
     const user = new User({
       name,
       email,
       password,
       phoneNumber,
-      agencyName,
-      agencyDescription,
-      license,
-      address,
-      role: 'agency',
-      status: 'pending' // Explicitly set to pending
+      role: 'admin',
+      status: 'active'
     });
 
     await user.save();
 
-    // Return user data without password
+    // Create admin profile
+    const admin = new Admin({
+      userId: user._id,
+      role: 'admin'
+    });
+    await admin.save();
+
+    // Remove password from response
     const userResponse = user.toObject();
     delete (userResponse as any).password;
 
-    res.status(201).json({
+    const response: IAuthResponse = {
       success: true,
-      message: 'Agency request submitted successfully. Your account will be reviewed by an administrator.',
+      message: 'Admin registration successful',
       user: userResponse
-    });
+    };
+
+    res.status(201).json(response);
   } catch (error) {
-    console.error('Agency request error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error during agency request'
-    });
+    next(error);
   }
 };
 
-// Delete user endpoint
-export const deleteUser = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const agencyRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const targetUserId = req.params.user_id;
-    const authenticatedUser = req.user!;
+    const { name, email, password } = req.body;
 
-    // Find the target user
-    const targetUser = await User.findById(targetUserId);
-    if (!targetUser) {
-      res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-      return;
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new ConflictError('User with this email already exists');
     }
 
-    // Additional validation for admin users
-    if (authenticatedUser.role === 'admin') {
-      // Admin cannot delete other admins
-      if (targetUser.role === 'admin') {
-        res.status(403).json({
-          success: false,
-          message: 'Admins cannot delete other admin accounts'
-        });
-        return;
+    // Check if agency name already exists
+    const existingAgency = await Agency.findOne({ name });
+    if (existingAgency) {
+      throw new ConflictError('Agency with this name already exists');
+    }
+
+    // Create user with pending status
+    const user = new User({
+      name,
+      email,
+      password,
+      role: 'agency',
+      status: 'pending'
+    });
+
+    await user.save();
+
+    // Generate unique slug
+    const baseSlug = generateSlug(name);
+    const existingSlugs = await Agency.distinct('slug');
+    const slug = generateUniqueSlug(baseSlug, existingSlugs);
+
+    // Create basic agency profile with minimal data
+    const agency = new Agency({
+      userId: user._id,
+      name,
+      slug,
+      verificationStatus: 'unverified'
+    });
+
+    await agency.save();
+
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete (userResponse as any).password;
+
+    const response: IAuthResponse = {
+      success: true,
+      message: 'Agency registration successful. Please wait for verification and activation.',
+      user: userResponse
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const customerRegister = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { name, email, password, phoneNumber } = req.body;
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      throw new ConflictError('User with this email already exists');
+    }
+
+    // Create customer user
+    const user = new User({
+      name,
+      email,
+      password,
+      phoneNumber,
+      role: 'customer',
+      status: 'active'
+    });
+
+    await user.save();
+
+    // Create customer profile
+    const customer = new Customer({
+      userId: user._id
+    });
+    await customer.save();
+
+    // Remove password from response
+    const userResponse = user.toObject();
+    delete (userResponse as any).password;
+
+    const response: IAuthResponse = {
+      success: true,
+      message: 'Customer registration successful',
+      user: userResponse
+    };
+
+    res.status(201).json(response);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMe = async (req: IAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AuthenticationError('User not found');
+    }
+
+    // Get role-specific data
+    let additionalData = {};
+
+    if (req.user.role === 'agency') {
+      const agency = await Agency.findOne({ userId: req.user._id });
+      if (agency) {
+        additionalData = { agency };
+      }
+    } else if (req.user.role === 'customer') {
+      const customer = await Customer.findOne({ userId: req.user._id });
+      if (customer) {
+        additionalData = { customer };
+      }
+    } else if (req.user.role === 'admin' || req.user.role === 'super_admin') {
+      const admin = await Admin.findOne({ userId: req.user._id });
+      if (admin) {
+        additionalData = { admin };
       }
     }
 
-    // Delete the user
-    await User.findByIdAndDelete(targetUserId);
-
-    res.status(200).json({
+    const response = {
       success: true,
-      message: 'User account deleted successfully'
-    });
+      message: 'User profile retrieved successfully',
+      data: {
+        user: req.user,
+        ...additionalData
+      }
+    };
+
+    res.status(200).json(response);
   } catch (error) {
-    console.error('Delete user error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while deleting user'
-    });
+    next(error);
+  }
+};
+
+export const changePassword = async (req: IAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AuthenticationError('User not found');
+    }
+
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await User.findById(req.user._id).select('+password');
+    if (!user) {
+      throw new AuthenticationError('User not found');
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+    if (!isCurrentPasswordValid) {
+      throw new ValidationError('Current password is incorrect');
+    }
+
+    // Update password
+    user.password = newPassword;
+    await user.save();
+
+    const response = {
+      success: true,
+      message: 'Password changed successfully'
+    };
+
+    res.status(200).json(response);
+  } catch (error) {
+    next(error);
   }
 }; 

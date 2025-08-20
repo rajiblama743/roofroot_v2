@@ -1,26 +1,39 @@
 import { Router } from 'express';
-import {
-  register,
-  login,
-  deleteUser,
-  requestAgency,
-  validateRegistration,
-  validateLogin
+import { 
+  adminLogin,
+  agencyLogin,
+  customerLogin,
+  adminRegister,
+  agencyRegister,
+  customerRegister,
+  getMe, 
+  changePassword 
 } from '../controllers/authController';
-import { authenticateToken } from '../middlewares/authMiddleware';
-import { requireOwnershipOrAdmin } from '../middlewares/roleMiddleware';
+import { 
+  adminLoginSchema,
+  agencyLoginSchema,
+  customerLoginSchema,
+  adminRegisterSchema,
+  agencyRegisterSchema,
+  customerRegisterSchema,
+  changePasswordSchema 
+} from '../validation/auth';
+import { validateBody } from '../middlewares/validate';
+import { authenticateToken } from '../middlewares/auth';
 
 const router = Router();
 
-// Public routes (no authentication required)
-router.post('/register', validateRegistration, register); // Register new customer
-router.post('/login', validateLogin, login); // Login
-router.post('/request-agency', validateRegistration, requestAgency); // Agency request
+// Public routes - Role-specific only
+router.post('/admin/login', validateBody(adminLoginSchema), adminLogin);
+router.post('/agency/login', validateBody(agencyLoginSchema), agencyLogin);
+router.post('/customer/login', validateBody(customerLoginSchema), customerLogin);
 
-// Protected routes (authentication required)
-router.use(authenticateToken);
+router.post('/admin/register', validateBody(adminRegisterSchema), adminRegister);
+router.post('/agency/register', validateBody(agencyRegisterSchema), agencyRegister);
+router.post('/customer/register', validateBody(customerRegisterSchema), customerRegister);
 
-// Routes with ownership checks
-router.delete('/users/:user_id', requireOwnershipOrAdmin, deleteUser); // Delete user (own account or admin)
+// Protected routes
+router.get('/me', authenticateToken, getMe);
+router.post('/change-password', authenticateToken, validateBody(changePasswordSchema), changePassword);
 
 export default router; 

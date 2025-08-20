@@ -134,22 +134,36 @@ export function useInfiniteScrollFetch<T>({
 
       // Handle both new format (items) and backward compatibility (listings/agencies)
       let responseItems: any[] = [];
-      if (response.items && Array.isArray(response.items)) {
+      let responseTotal = 0;
+      let responseHasMore = false;
+      
+      // Check if response has data wrapper (new backend format)
+      if (response.data && response.data.items && Array.isArray(response.data.items)) {
+        responseItems = response.data.items;
+        responseTotal = response.data.total || 0;
+        responseHasMore = response.data.hasMore || false;
+      } else if (response.items && Array.isArray(response.items)) {
         responseItems = response.items;
+        responseTotal = response.total || 0;
+        responseHasMore = response.hasMore || false;
       } else if (response.listings && Array.isArray(response.listings)) {
         responseItems = response.listings;
+        responseTotal = response.total || 0;
+        responseHasMore = response.hasMore || false;
       } else if (response.agencies && Array.isArray(response.agencies)) {
         responseItems = response.agencies;
+        responseTotal = response.total || 0;
+        responseHasMore = response.hasMore || false;
       }
 
-      console.log('Processed items', { responseItems: responseItems.length, total: response.total });
+      console.log('Processed items', { responseItems: responseItems.length, total: responseTotal });
 
-      if (responseItems.length > 0 || response.total === 0) {
+      if (responseItems.length > 0 || responseTotal === 0) {
         setItems(prevItems => 
           page === initialPage ? responseItems : [...prevItems, ...responseItems]
         );
-        setHasMore(response.hasMore);
-        setTotal(response.total);
+        setHasMore(responseHasMore);
+        setTotal(responseTotal);
         setPage(prevPage => prevPage + 1);
         
         // Mark that we've fetched at least once

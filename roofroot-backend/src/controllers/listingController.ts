@@ -1,483 +1,317 @@
-import { Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import Listing, { IListing } from '../models/Listing';
-import { CreateListingRequest, UpdateListingRequest, AuthenticatedListingRequest } from '../types/listing';
+import { Request, Response, NextFunction } from 'express';
+import Listing from '../models/Listings';
+import Property from '../models/Properties';
+import Agency from '../models/Agencies';
+import { IAuthenticatedRequest, IPaginationResponse } from '../types/common';
+import { IListingFilters, IListingCreate, IListingUpdate, ILegacyListingResponse } from '../types/listing';
+import { NotFoundError, AuthorizationError } from '../utils/errors';
+import { parsePaginationQuery, createPaginationResponse, ensureValidPagination } from '../utils/pagination';
+import { syncListingDenorm } from '../utils/denormSync';
 
-// Validation rules for creating listings
-export const validateCreateListing = [
-  body('title')
-    .trim()
-    .isLength({ min: 5, max: 200 })
-    .withMessage('Title must be between 5 and 200 characters'),
-  body('description')
-    .trim()
-    .isLength({ min: 20, max: 2000 })
-    .withMessage('Description must be between 20 and 2000 characters'),
-  body('price')
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
-  body('location')
-    .trim()
-    .isLength({ min: 5, max: 500 })
-    .withMessage('Location must be between 5 and 500 characters'),
-  body('type')
-    .isIn(['sale', 'lease'])
-    .withMessage('Type must be either sale or lease'),
-  body('bedrooms')
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage('Bedrooms must be a non-negative integer'),
-  body('bathrooms')
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage('Bathrooms must be a non-negative integer'),
-  body('carBay')
-    .optional()
-    .isInt({ min: 0 })
-    .withMessage('Car Bay must be a non-negative integer'),
-  body('area')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Area must be a positive number'),
-  body('images')
-    .optional()
-    .isArray({ max: 10 })
-    .withMessage('Images must be an array with maximum 10 items'),
-  body('images.*')
-    .optional()
-    .isURL()
-    .withMessage('Each image must be a valid URL')
-];
-
-// Validation rules for updating listings
-export const validateUpdateListing = [
-  body('title')
-    .optional()
-    .trim()
-    .isLength({ min: 5, max: 200 })
-    .withMessage('Title must be between 5 and 200 characters'),
-  body('description')
-    .optional()
-    .trim()
-    .isLength({ min: 20, max: 2000 })
-    .withMessage('Description must be between 20 and 2000 characters'),
-  body('price')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Price must be a positive number'),
-  body('location')
-    .optional()
-    .trim()
-    .isLength({ min: 5, max: 500 })
-    .withMessage('Location must be between 5 and 500 characters'),
-  body('type')
-    .optional()
-    .isIn(['sale', 'lease'])
-    .withMessage('Type must be either sale or lease'),
-  body('images')
-    .optional()
-    .isArray({ max: 10 })
-    .withMessage('Images must be an array with maximum 10 items'),
-  body('images.*')
-    .optional()
-    .isURL()
-    .withMessage('Each image must be a valid URL')
-];
-
-// Create listing (agency only)
-export const createListing = async (req: AuthenticatedListingRequest, res: Response): Promise<void> => {
+// Public endpoint - Get listings with search and filters
+export const getListings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array().map(err => `${err.type === 'field' ? err.path : 'unknown'}: ${err.msg}`)
-      });
-      return;
-    }
+    const { page, limit } = ensureValidPagination(
+      parseInt(req.query.page as string),
+      parseInt(req.query.limit as string)
+    );
+    const { q, status, saleOrLease, featured, agencyId, propertyType, minPrice, maxPrice } = req.query as IListingFilters;
 
-    const { 
-      title, 
-      description, 
-      price, 
-      location, 
-      type, 
-      images = [],
-      bedrooms,
-      bathrooms,
-      carBay,
-      area
-    }: CreateListingRequest = req.body;
-    const userId = req.user!._id.toString();
-
-    // Create new listing with all fields
-    const listing = new Listing({
-      title,
-      description,
-      price,
-      location,
-      type,
-      images,
-      bedrooms: bedrooms || undefined,
-      bathrooms: bathrooms || undefined,
-      carBay: carBay || undefined,
-      area: area || undefined,
-      createdBy: userId
-    });
-
-    await listing.save();
-
-    // Populate creator info (excluding sensitive data)
-    await listing.populate('createdBy', 'name email agencyName');
-
-    res.status(201).json({
-      success: true,
-      message: 'Listing created successfully',
-      listing
-    });
-  } catch (error) {
-    console.error('Create listing error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while creating listing'
-    });
-  }
-};
-
-// Get all listings (public)
-export const getAllListings = async (req: Request, res: Response): Promise<void> => {
-  try {
-    // Validate and sanitize pagination parameters
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-    const type = req.query.type as string;
-    const minPrice = req.query.minPrice ? parseFloat(req.query.minPrice as string) : undefined;
-    const maxPrice = req.query.maxPrice ? parseFloat(req.query.maxPrice as string) : undefined;
-    const search = req.query.search as string;
-
-    // Build query
     const query: any = {};
-    
-    if (type && ['sale', 'lease'].includes(type)) {
-      query.type = type;
-    }
-    
-    if (minPrice !== undefined || maxPrice !== undefined) {
-      query.price = {};
-      if (minPrice !== undefined && !isNaN(minPrice)) query.price.$gte = minPrice;
-      if (maxPrice !== undefined && !isNaN(maxPrice)) query.price.$lte = maxPrice;
-    }
-    
-    if (search) {
-      query.$text = { $search: search };
+
+    // Default to active listings for public view
+    if (!status) {
+      query.status = 'active';
+    } else {
+      query.status = status;
     }
 
-    // Calculate skip value for pagination
-    const skip = (page - 1) * limit;
+    // Add search filters
+    if (q) {
+      query.$or = [
+        { 'listingDetails.title': { $regex: q, $options: 'i' } },
+        { 'listingDetails.description': { $regex: q, $options: 'i' } },
+        { 'denorm.agencyName': { $regex: q, $options: 'i' } },
+        { 'denorm.propertyTitle': { $regex: q, $options: 'i' } }
+      ];
+    }
 
-    // Execute query with pagination and performance optimizations
-    const listings = await Listing.find(query)
-      .populate('createdBy', 'name email agencyName')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    if (saleOrLease) {
+      query.saleOrLease = saleOrLease;
+    }
 
-    // Get total count for pagination
+    if (featured !== undefined) {
+      // Handle both string and boolean values
+      if (typeof featured === 'string') {
+        query['marketing.featured'] = featured === 'true';
+      } else {
+        query['marketing.featured'] = featured;
+      }
+    }
+
+    if (agencyId) {
+      query.agencyId = agencyId;
+    }
+
+    if (propertyType) {
+      // This requires a join with Properties collection
+      const properties = await Property.find({ propertyType }).distinct('_id');
+      query.propertyId = { $in: properties };
+    }
+
+    if (minPrice || maxPrice) {
+      // This requires a join with Properties collection for market value
+      const priceQuery: any = {};
+      if (minPrice) priceQuery['marketInfo.marketValue'] = { $gte: Number(minPrice) };
+      if (maxPrice) priceQuery['marketInfo.marketValue'] = { $lte: Number(maxPrice) };
+      
+      const properties = await Property.find(priceQuery).distinct('_id');
+      query.propertyId = { $in: properties };
+    }
+
+    // Get total count
     const total = await Listing.countDocuments(query);
 
-    // Calculate pagination metadata
-    const totalPages = Math.ceil(total / limit);
-    const hasMore = page < totalPages;
+    // Get listings with pagination
+    const listings = await Listing.find(query)
+      .populate('propertyId', 'title description propertyType status physicalDetails features media marketInfo')
+      .populate('agencyId', 'name slug')
+      .populate('agentId', 'name email')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    const response: IPaginationResponse<any> = createPaginationResponse(
+      listings,
+      page,
+      limit,
+      total
+    );
 
     res.status(200).json({
       success: true,
       message: 'Listings retrieved successfully',
-      items: listings, // Consistent with pagination contract
-      listings, // Keep for backward compatibility
-      total,
-      page,
-      limit,
-      totalPages,
-      hasMore
+      data: response
     });
   } catch (error) {
-    console.error('Get all listings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while retrieving listings'
-    });
+    next(error);
   }
 };
 
-// Get listing by ID (public)
-export const getListingById = async (req: Request, res: Response): Promise<void> => {
+// Public endpoint - Get listing by ID
+export const getListingById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const listingId = req.params.id;
+    const { id } = req.params;
 
-    const listing = await Listing.findById(listingId)
-      .populate('createdBy', 'name email agencyName');
+    const listing = await Listing.findById(id)
+      .populate('propertyId', 'title description propertyType status physicalDetails features media marketInfo')
+      .populate('agencyId', 'name slug description')
+      .populate('agentId', 'name email phoneNumber');
 
     if (!listing) {
-      res.status(404).json({
-        success: false,
-        message: 'Listing not found'
-      });
-      return;
+      throw new NotFoundError('Listing not found');
     }
 
     res.status(200).json({
       success: true,
       message: 'Listing retrieved successfully',
-      listing
+      data: listing
     });
   } catch (error) {
-    console.error('Get listing by ID error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while retrieving listing'
-    });
+    next(error);
   }
 };
 
-// Update listing (only creator can update)
-export const updateListing = async (req: AuthenticatedListingRequest, res: Response): Promise<void> => {
+// Agency-scoped endpoint - Create listing
+export const createListing = async (req: IAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // Check for validation errors
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array().map(err => err.msg)
-      });
-      return;
+    if (!req.user) {
+      throw new AuthorizationError('Authentication required');
     }
 
-    const listingId = req.params.id;
-    const updateData: UpdateListingRequest = req.body;
-    const userId = req.user!._id.toString();
-
-    // Check if listing exists
-    const existingListing = await Listing.findById(listingId);
-    if (!existingListing) {
-      res.status(404).json({
-        success: false,
-        message: 'Listing not found'
-      });
-      return;
+    if (req.user.role !== 'agency') {
+      throw new AuthorizationError('Agency access required');
     }
 
-    // Check if user is the creator (only creator can update)
-    if (existingListing.createdBy.toString() !== userId) {
-      res.status(403).json({
-        success: false,
-        message: 'You can only update your own listings'
-      });
-      return;
+    const listingData: IListingCreate = {
+      ...req.body,
+      agencyId: req.user.agencyId!
+    };
+
+    // Verify property ownership
+    const property = await Property.findById(listingData.propertyId);
+    if (!property) {
+      throw new NotFoundError('Property not found');
     }
 
-    // Update listing
+    if (property.agencyId.toString() !== req.user.agencyId) {
+      throw new AuthorizationError('Property does not belong to your agency');
+    }
+
+    const listing = new Listing(listingData);
+    await listing.save();
+
+    // Sync denorm data
+    await syncListingDenorm((listing._id as any).toString());
+
+    res.status(201).json({
+      success: true,
+      message: 'Listing created successfully',
+      data: listing
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Agency-scoped endpoint - Update listing
+export const updateListing = async (req: IAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    if (!req.user) {
+      throw new AuthorizationError('Authentication required');
+    }
+
+    const { id } = req.params;
+    const updateData: IListingUpdate = req.body;
+
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      throw new NotFoundError('Listing not found');
+    }
+
+    // Check ownership: agency owner or admin
+    if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
+      if (req.user.role !== 'agency' || listing.agencyId.toString() !== req.user.agencyId) {
+        throw new AuthorizationError('Access denied');
+      }
+    }
+
     const updatedListing = await Listing.findByIdAndUpdate(
-      listingId,
+      id,
       updateData,
       { new: true, runValidators: true }
-    ).populate('createdBy', 'name email agencyName');
+    );
 
-    if (!updatedListing) {
-      res.status(404).json({
-        success: false,
-        message: 'Listing not found'
-      });
-      return;
-    }
+    // Sync denorm data
+    await syncListingDenorm(id);
 
     res.status(200).json({
       success: true,
       message: 'Listing updated successfully',
-      listing: updatedListing
+      data: updatedListing
     });
   } catch (error) {
-    console.error('Update listing error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while updating listing'
-    });
+    next(error);
   }
 };
 
-// Delete listing (creator or admin only)
-export const deleteListing = async (req: AuthenticatedListingRequest, res: Response): Promise<void> => {
+// Agency-scoped endpoint - Delete listing
+export const deleteListing = async (req: IAuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const listingId = req.params.id;
-    const userId = req.user!._id.toString();
-    const userRole = req.user!.role;
-
-    // Check if listing exists
-    const existingListing = await Listing.findById(listingId);
-    if (!existingListing) {
-      res.status(404).json({
-        success: false,
-        message: 'Listing not found'
-      });
-      return;
+    if (!req.user) {
+      throw new AuthorizationError('Authentication required');
     }
 
-    // Check if user is the creator or admin
-    const isCreator = existingListing.createdBy.toString() === userId;
-    const isAdmin = userRole === 'admin';
+    const { id } = req.params;
 
-    if (!isCreator && !isAdmin) {
-      res.status(403).json({
-        success: false,
-        message: 'You can only delete your own listings or must be an admin'
-      });
-      return;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      throw new NotFoundError('Listing not found');
     }
 
-    // Delete listing
-    await Listing.findByIdAndDelete(listingId);
+    // Check ownership: agency owner or admin
+    if (req.user.role !== 'admin' && req.user.role !== 'super_admin') {
+      if (req.user.role !== 'agency' || listing.agencyId.toString() !== req.user.agencyId) {
+        throw new AuthorizationError('Access denied');
+      }
+    }
+
+    await Listing.findByIdAndDelete(id);
 
     res.status(200).json({
       success: true,
       message: 'Listing deleted successfully'
     });
   } catch (error) {
-    console.error('Delete listing error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while deleting listing'
-    });
+    next(error);
   }
 };
 
-// Get listings by creator (for agency dashboard)
-export const getMyListings = async (req: AuthenticatedListingRequest, res: Response): Promise<void> => {
+// Legacy v1 compatibility endpoint
+export const getLegacyListings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user!._id.toString();
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
-
-    const skip = (page - 1) * limit;
-
-    const listings = await Listing.find({ createdBy: userId })
-      .populate('createdBy', 'name email agencyName')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(); // Use lean() for better performance
-
-    const total = await Listing.countDocuments({ createdBy: userId });
-    const totalPages = Math.ceil(total / limit);
-    const hasMore = page < totalPages;
-
-    res.status(200).json({
-      success: true,
-      message: 'Your listings retrieved successfully',
-      items: listings, // Consistent with pagination contract
-      listings, // Keep for backward compatibility
-      total,
-      page,
-      limit,
-      totalPages,
-      hasMore
-    });
-  } catch (error) {
-    console.error('Get my listings error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while retrieving your listings'
-    });
-  }
-}; 
-
-// Get listings by agency name (public)
-export const getListingsByAgency = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const agencyName = decodeURIComponent(req.params.agencyName);
-    const page = Math.max(1, parseInt(req.query.page as string) || 1);
-    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 12));
-
-    const skip = (page - 1) * limit;
-
-    // First, find users that match the agency name
-    const User = require('../models/User').default;
+    // Add deprecation header
+    res.set('X-Deprecated', 'v1-listings');
     
-    const matchingUsers = await User.find({
-      $or: [
-        { agencyName: { $regex: agencyName, $options: 'i' } },
-        { name: { $regex: agencyName, $options: 'i' } }
-      ]
-    }).select('_id name agencyName email phoneNumber agencyDescription address');
+    // Console warning for developers
+    console.warn('DEPRECATED: Using legacy v1 listings endpoint. Please migrate to v2 architecture.');
 
-    if (matchingUsers.length === 0) {
-      // No users found with this agency name
-      res.status(200).json({
-        success: true,
-        message: 'Agency listings retrieved successfully',
-        items: [], // Consistent with pagination contract
-        listings: [], // Keep for backward compatibility
-        agencyInfo: null,
-        total: 0,
-        page,
-        limit,
-        totalPages: 0,
-        hasMore: false
-      });
-      return;
+    const { page, limit } = ensureValidPagination(
+      parseInt(req.query.page as string),
+      parseInt(req.query.limit as string)
+    );
+    const { type, q } = req.query;
+
+    const query: any = { status: 'active' };
+
+    if (type) {
+      query.saleOrLease = type;
     }
 
-    // Get user IDs that match
-    const userIds = matchingUsers.map((user: any) => user._id);
+    if (q) {
+      query.$or = [
+        { 'listingDetails.title': { $regex: q, $options: 'i' } },
+        { 'listingDetails.description': { $regex: q, $options: 'i' } }
+      ];
+    }
 
-    // Find listings created by these users
-    const query = { createdBy: { $in: userIds } };
-
-    // Execute query with pagination
-    const listings = await Listing.find(query)
-      .populate('createdBy', 'name email agencyName phoneNumber agencyDescription address')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean(); // Use lean() for better performance
-
-    // Get total count for pagination
+    // Get total count
     const total = await Listing.countDocuments(query);
-    const totalPages = Math.ceil(total / limit);
-    const hasMore = page < totalPages;
 
-    // Get agency info from the first matching user (even if no listings)
-    let agencyInfo = null;
-    if (matchingUsers.length > 0) {
-      const user = matchingUsers[0];
-      agencyInfo = {
-        name: user.name,
-        agencyName: user.agencyName,
-        email: user.email,
-        phoneNumber: user.phoneNumber,
-        agencyDescription: user.agencyDescription,
-        address: user.address
+    // Get listings with pagination
+    const listings = await Listing.find(query)
+      .populate('propertyId', 'title description physicalDetails features media marketInfo')
+      .populate('agencyId', 'name')
+      .populate('agentId', 'name')
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit);
+
+    // Transform to legacy v1 format
+    const legacyListings: ILegacyListingResponse[] = listings.map(listing => {
+      const property = listing.propertyId as any;
+      const agency = listing.agencyId as any;
+      const agent = listing.agentId as any;
+
+      return {
+        id: (listing._id as any).toString(),
+        title: listing.listingDetails.title,
+        description: listing.listingDetails.description,
+        price: property?.marketInfo?.marketValue || 0,
+        location: property?.physicalDetails?.address || '',
+        type: listing.saleOrLease,
+        images: property?.media?.photos || [],
+        bedrooms: property?.features?.bedrooms,
+        bathrooms: property?.features?.bathrooms,
+        carBay: property?.features?.carBay,
+        area: property?.features?.buildingSize,
+        createdBy: (agent?._id as any)?.toString() || '',
+        createdAt: listing.createdAt,
+        updatedAt: listing.updatedAt
       };
-    }
+    });
 
-    res.status(200).json({
+    const response = {
       success: true,
-      message: 'Agency listings retrieved successfully',
-      items: listings, // Consistent with pagination contract
-      listings, // Keep for backward compatibility
-      agencyInfo,
+      message: 'Legacy v1 listings retrieved successfully',
+      data: legacyListings,
       total,
       page,
-      limit,
-      totalPages,
-      hasMore
-    });
+      limit
+    };
+
+    res.status(200).json(response);
   } catch (error) {
-    console.error('Get listings by agency error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Internal server error while retrieving agency listings'
-    });
+    next(error);
   }
 }; 

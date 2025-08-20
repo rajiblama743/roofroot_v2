@@ -1,38 +1,29 @@
 import { Router } from 'express';
 import {
-  createListing,
-  getAllListings,
+  getListings,
   getListingById,
+  createListing,
   updateListing,
   deleteListing,
-  getMyListings,
-  getListingsByAgency,
-  validateCreateListing,
-  validateUpdateListing
+  getLegacyListings
 } from '../controllers/listingController';
-import { authenticateToken } from '../middlewares/authMiddleware';
-import {
-  requireAgencyRole,
-  requireListingOwnership,
-  requireDeletePermission
-} from '../middlewares/listingMiddleware';
+import { authenticateToken, requireAgency } from '../middlewares/auth';
 
 const router = Router();
 
-// Public routes (no authentication required)
-router.get('/', getAllListings); // Get all listings with filtering and pagination
-router.get('/by-agency/:agencyName', getListingsByAgency); // Get listings by agency name
-router.get('/:id', getListingById); // Get single listing by ID
+// Public routes
+router.get('/', getListings);
+router.get('/:id', getListingById);
 
-// Protected routes (authentication required)
-router.use(authenticateToken); // Apply authentication to all routes below
+// Legacy v1 compatibility route (with deprecation warning)
+router.get('/v1/legacy', getLegacyListings);
 
-// Agency-only routes
-router.post('/', requireAgencyRole, validateCreateListing, createListing); // Create listing (agency only)
-router.get('/my/listings', requireAgencyRole, getMyListings); // Get agency's own listings
+// Protected routes
+router.use(authenticateToken);
 
-// Routes with ownership checks
-router.put('/:id', requireListingOwnership, validateUpdateListing, updateListing); // Update listing (creator only)
-router.delete('/:id', requireDeletePermission, deleteListing); // Delete listing (creator or admin)
+// Agency-scoped operations
+router.post('/', requireAgency, createListing);
+router.patch('/:id', requireAgency, updateListing);
+router.delete('/:id', requireAgency, deleteListing);
 
 export default router; 

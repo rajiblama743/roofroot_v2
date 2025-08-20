@@ -1,20 +1,23 @@
 {
   "name": "roofroot-backend",
-  "version": "1.0.0",
-  "description": "RoofRoot Real Estate Platform Backend API",
+  "version": "2.0.0",
+  "description": "RoofRoot Real Estate Platform Backend API - 7-Collection Architecture",
   "main": "dist/server.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "migrate:v2": "ts-node --transpile-only scripts/migrate-v1-to-v2.ts",
+    "seed": "ts-node --transpile-only scripts/seed-v2.ts"
   },
   "keywords": [
     "real-estate",
     "api",
     "express",
     "typescript",
-    "mongodb"
+    "mongodb",
+    "mongoose"
   ],
   "author": "RoofRoot Team",
   "license": "MIT",
@@ -32,7 +35,9 @@
     "express-validator": "^7.2.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.0.3"
+    "mongoose": "^8.0.3",
+    "zod": "^3.22.4",
+    "slugify": "^1.6.6"
   },
   "devDependencies": {
     "ts-node-dev": "^2.0.0",

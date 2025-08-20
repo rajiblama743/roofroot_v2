@@ -3,7 +3,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
+import agencyRoutes from './routes/agencyRoutes';
+import propertyRoutes from './routes/propertyRoutes';
 import listingRoutes from './routes/listingRoutes';
 import { securityConfig, initializeSecurity } from './config/security';
 
@@ -49,7 +50,7 @@ if (process.env.NODE_ENV === 'development' && securityConfig.endpointRateLimits)
   
   // Endpoint-specific rate limits
   app.use('/api/listings', rateLimit(securityConfig.endpointRateLimits.listings));
-  app.use('/api/users/search/agencies', rateLimit(securityConfig.endpointRateLimits.agencies));
+  app.use('/api/agencies', rateLimit(securityConfig.endpointRateLimits.agencies));
   app.use('/api/auth', rateLimit(securityConfig.endpointRateLimits.auth));
 } else {
   // Production: Use general rate limiting
@@ -67,7 +68,9 @@ app.get('/api/health', (req, res) => {
     message: 'Server is healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
+    version: '2.0.0',
+    architecture: '7-Collection Architecture'
   };
 
   res.status(200).json(healthData);
@@ -78,14 +81,16 @@ app.get('/', (req, res) => {
   res.json({
     success: true,
     message: 'RoofRoot API is running',
-    version: '1.0.0',
+    version: '2.0.0',
+    architecture: '7-Collection Architecture',
     timestamp: new Date().toISOString()
   });
 });
 
 // API routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+app.use('/api/agencies', agencyRoutes);
+app.use('/api/properties', propertyRoutes);
 app.use('/api/listings', listingRoutes);
 
 // 404 handler
@@ -120,6 +125,15 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
     return res.status(409).json({
       success: false,
       message: 'Duplicate field value'
+    });
+  }
+  
+  // Handle custom AppError types
+  if (error.statusCode) {
+    return res.status(error.statusCode).json({
+      success: false,
+      message: error.message,
+      code: error.code
     });
   }
   

@@ -10,12 +10,10 @@ if (!process.env.NODE_ENV) {
   process.env.NODE_ENV = 'development';
 }
 
-// Import and validate JWT secrets after dotenv is loaded
-import { validateJWTSecrets } from './middlewares/authMiddleware';
+// Import security configuration after dotenv is loaded
 import { initializeSecurity } from './config/security';
 
-// Validate JWT secrets after environment variables are loaded
-validateJWTSecrets();
+// Initialize security
 initializeSecurity();
 
 // Get port from environment variable, with fallbacks
