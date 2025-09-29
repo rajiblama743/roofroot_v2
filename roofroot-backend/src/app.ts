@@ -88,9 +88,16 @@ app.get('/', (req, res) => {
 });
 
 // API routes
+// Authentication, registration, profile management, and admin verification
 app.use('/api/auth', authRoutes);
+
+// Public agency viewing (verified agencies only)
 app.use('/api/agencies', agencyRoutes);
+
+// Property management (public viewing, agency-scoped CRUD)
 app.use('/api/properties', propertyRoutes);
+
+// Listing management (public viewing, agency-scoped CRUD)
 app.use('/api/listings', listingRoutes);
 
 // 404 handler

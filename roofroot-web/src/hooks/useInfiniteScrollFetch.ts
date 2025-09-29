@@ -10,6 +10,15 @@ export interface PaginationResponse<T> {
   // Backward compatibility fields
   listings?: T[];
   agencies?: T[];
+  // New backend format wrapper
+  data?: {
+    items: T[];
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+    totalPages?: number;
+  };
 }
 
 export interface UseInfiniteScrollFetchOptions<T> {

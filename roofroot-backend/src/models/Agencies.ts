@@ -39,6 +39,24 @@ const socialProofSchema = new Schema({
   testimonials: { type: Number, default: 0 }
 }, { _id: false });
 
+const verificationWorkflowSchema = new Schema({
+  verificationStatus: { 
+    type: String, 
+    enum: ['unverified', 'pending_verification', 'verified', 'rejected'], 
+    default: 'unverified' 
+  },
+  profileComplete: { type: Boolean, default: false },
+  completionPercentage: { type: Number, default: 0 },
+  verificationRequestedAt: Date,
+  verificationRequestedBy: { type: Schema.Types.ObjectId, ref: 'Users' },
+  verifiedAt: Date,
+  verifiedBy: { type: Schema.Types.ObjectId, ref: 'Users' },
+  rejectionReason: String,
+  rejectedAt: Date,
+  rejectedBy: { type: Schema.Types.ObjectId, ref: 'Users' },
+  lastProfileUpdate: { type: Date, default: Date.now }
+}, { _id: false });
+
 const agencySchema = new Schema<IAgency>({
   userId: { type: Schema.Types.ObjectId, ref: 'Users', required: true },
   name: { type: String, required: true, trim: true },
@@ -53,11 +71,7 @@ const agencySchema = new Schema<IAgency>({
   expertise: { type: expertiseSchema, default: {} },
   performance: { type: performanceSchema, default: {} },
   socialProof: { type: socialProofSchema, default: {} },
-  verificationStatus: { 
-    type: String, 
-    enum: ['unverified', 'verified', 'rejected'], 
-    default: 'unverified' 
-  },
+  verificationWorkflow: { type: verificationWorkflowSchema, default: {} },
   approvalDate: Date,
   approvedBy: { type: Schema.Types.ObjectId, ref: 'Users' }
 }, {
@@ -67,7 +81,8 @@ const agencySchema = new Schema<IAgency>({
 // Indexes
 agencySchema.index({ userId: 1 }, { unique: true });
 agencySchema.index({ slug: 1 });
-agencySchema.index({ verificationStatus: 1 });
+agencySchema.index({ 'verificationWorkflow.verificationStatus': 1 });
+agencySchema.index({ 'verificationWorkflow.profileComplete': 1 });
 agencySchema.index({ 'locations.serviceAreas': 1 });
 
 const Agency = mongoose.model<IAgency>('Agencies', agencySchema);

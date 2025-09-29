@@ -130,3 +130,6 @@ export const requireSuperAdmin = (req: IAuthenticatedRequest, res: Response, nex
 
   next();
 };
+
+// Alias for superAdminOnly
+export const superAdminOnly = requireSuperAdmin;

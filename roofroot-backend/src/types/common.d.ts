@@ -54,6 +54,11 @@ export interface IAuthResponse {
   token?: string;
   user?: Omit<IUser, 'password'> & { agencyId?: string };
   agency?: any; // Agency profile data for agency login responses
+  nextStep?: string; // Next step for onboarding flow
+  redirectTo?: string; // Redirect URL for frontend
+  profileCompletion?: number; // Profile completion percentage
+  estimatedReviewTime?: string; // Estimated time for verification review
+  rejectionReason?: string; // Reason for profile rejection
 }
 
 // Validation types

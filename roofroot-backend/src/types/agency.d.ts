@@ -1,6 +1,20 @@
 import { Document, Types } from 'mongoose';
 
-export type VerificationStatus = 'unverified' | 'verified' | 'rejected';
+export type VerificationStatus = 'unverified' | 'pending_verification' | 'verified' | 'rejected';
+
+export interface IVerificationWorkflow {
+  verificationStatus: VerificationStatus;
+  profileComplete: boolean;
+  completionPercentage: number;
+  verificationRequestedAt?: Date;
+  verificationRequestedBy?: Types.ObjectId;
+  verifiedAt?: Date;
+  verifiedBy?: Types.ObjectId;
+  rejectionReason?: string;
+  rejectedAt?: Date;
+  rejectedBy?: Types.ObjectId;
+  lastProfileUpdate: Date;
+}
 
 export interface IBusinessInfo {
   legalName?: string;
@@ -54,7 +68,7 @@ export interface IAgency extends Document {
   expertise: IExpertise;
   performance: IPerformance;
   socialProof: ISocialProof;
-  verificationStatus: VerificationStatus;
+  verificationWorkflow: IVerificationWorkflow;
   approvalDate?: Date;
   approvedBy?: Types.ObjectId;
   createdAt: Date;
@@ -76,7 +90,7 @@ export interface IAgencyResponse {
   expertise: IExpertise;
   performance: IPerformance;
   socialProof: ISocialProof;
-  verificationStatus: VerificationStatus;
+  verificationWorkflow: IVerificationWorkflow;
   approvalDate?: Date;
   approvedBy?: string;
   createdAt: Date;
@@ -106,7 +120,7 @@ export interface IAgencyUpdate {
   licensing?: Partial<ILicensing>;
   locations?: Partial<ILocations>;
   expertise?: Partial<IExpertise>;
-  verificationStatus?: VerificationStatus;
+  verificationWorkflow?: Partial<IVerificationWorkflow>;
   approvalDate?: Date;
   approvedBy?: string;
 }
