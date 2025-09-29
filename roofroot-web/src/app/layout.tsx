@@ -25,9 +25,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <head>
-        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=13ffaf48-0d06-4377-97cf-9ea7954d1c2a"></script>
-      </head>
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50">
           <ConditionalHeader />
@@ -59,6 +56,7 @@ export default function RootLayout({
             },
           }}
         />
+        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=13ffaf48-0d06-4377-97cf-9ea7954d1c2a"></script>
       </body>
     </html>
   );
