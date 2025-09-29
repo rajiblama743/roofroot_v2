@@ -56,7 +56,7 @@ export default function RootLayout({
             },
           }}
         />
-        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=f627542f-35a3-4cef-b912-8bc59a43ff85"></script>
+        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdTbHVnIjoibXktd29ya3NwYWNlLW9yZy0xNzU4NzIyNjcxMTk1IiwiZG9tYWluIjoicm9vZmNoYWlucy5jb20iLCJhcGlLZXlJZCI6ImNtZzU3dXA3MzAwMDFyYW96ZjlkemNmZ20iLCJwZXJtaXNzaW9ucyI6WyJwdWJsaWMtY2hhdCJdLCJleHBpcmVzIjoxNzYxNzUyMTUzNDIxLCJ2ZXJzaW9uIjoiMS4wIiwidG9rZW5JZCI6IjViNGUzNjc1LTZkODctNGY0My04NzFjLTQzMDdhMjYxYTQ0YiIsImlhdCI6MTc1OTE2MDE1NSwiZXhwIjoxNzYxNzUyMTU1LCJhdWQiOiJoZWxwZHJvaWR4LWNsaWVudCIsImlzcyI6ImhlbHBkcm9pZHgtd2lkZ2V0IiwianRpIjoiNWI0ZTM2NzUtNmQ4Ny00ZjQzLTg3MWMtNDMwN2EyNjFhNDRiIn0.mvSrV7-MAFExCCsvknF3e2kl26_DZoS1JV0gKnU9Ang"></script>
       </body>
     </html>
   );
