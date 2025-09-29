@@ -56,7 +56,7 @@ export default function RootLayout({
             },
           }}
         />
-        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=13ffaf48-0d06-4377-97cf-9ea7954d1c2a"></script>
+        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=f627542f-35a3-4cef-b912-8bc59a43ff85"></script>
       </body>
     </html>
   );
