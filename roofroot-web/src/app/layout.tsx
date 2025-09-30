@@ -56,7 +56,7 @@ export default function RootLayout({
             },
           }}
         />
-        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdTbHVnIjoibXktd29ya3NwYWNlLW9yZy0xNzU4NzIyNjcxMTk1IiwiZG9tYWluIjoicm9vZmNoYWlucy5jb20iLCJhcGlLZXlJZCI6ImNtZzU3dXA3MzAwMDFyYW96ZjlkemNmZ20iLCJwZXJtaXNzaW9ucyI6WyJwdWJsaWMtY2hhdCJdLCJleHBpcmVzIjoxNzYxODIwMzQ2MjgwLCJ2ZXJzaW9uIjoiMS4wIiwidG9rZW5JZCI6ImE3Nzc5ZmU5LTg5ODEtNDA3Ni1iYWQ5LTE1NTEyZTUwMWY5ZSIsImlhdCI6MTc1OTIyODM0OCwiZXhwIjoxNzYxODIwMzQ4LCJhdWQiOiJoZWxwZHJvaWR4LWNsaWVudCIsImlzcyI6ImhlbHBkcm9pZHgtd2lkZ2V0IiwianRpIjoiYTc3NzlmZTktODk4MS00MDc2LWJhZDktMTU1MTJlNTAxZjllIn0.iGGjvIkLCcpu7eR5Xn3L97vbF8fw4WnsAgn-82_CKcQ"></script>
+        <script src="https://helpdroidx-frontend.vercel.app/widget-secure.js?config=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdTbHVnIjoibXktd29ya3NwYWNlLW9yZy0xNzU4NzIyNjcxMTk1IiwiZG9tYWluIjoicm9vZmNoYWlucy5jb20iLCJhcGlLZXlJZCI6ImNtZzZoNmk4YTAwMDFzMmUwdGd4OTMwZ2oiLCJwZXJtaXNzaW9ucyI6WyJwdWJsaWMtY2hhdCJdLCJleHBpcmVzIjoxNzYxODI1MzcxNTIzLCJ2ZXJzaW9uIjoiMS4wIiwidG9rZW5JZCI6IjQwYzM2NzM0LTFiOWMtNDYzMy04MGM4LWE5ZWIyMzRkOWZhOSIsImlhdCI6MTc1OTIzMzM3NCwiZXhwIjoxNzYxODI1Mzc0LCJhdWQiOiJoZWxwZHJvaWR4LWNsaWVudCIsImlzcyI6ImhlbHBkcm9pZHgtd2lkZ2V0IiwianRpIjoiNDBjMzY3MzQtMWI5Yy00NjMzLTgwYzgtYTllYjIzNGQ5ZmE5In0.YfdZMLsmHoYQr6Ik5jPGnz7zKfPgZw56m2tRa_yjK1k"></script>
       </body>
     </html>
   );
